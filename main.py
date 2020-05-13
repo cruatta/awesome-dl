@@ -8,8 +8,9 @@ ytdl = YTDL()
 
 
 @app.post("/task")
-def add_task(task: DownloadRequest) -> SubmittedTask:
-    return ytdl.add(task)
+async def add_task(task: DownloadRequest) -> SubmittedTask:
+    task = await ytdl.add(task)
+    return task
 
 
 @app.get("/task")
@@ -24,6 +25,5 @@ def get_running_tasks() -> Any:
 
 @app.post("/task/cancel")
 def cancel_task(pid: PID) -> Any:
-    cancelled = ytdl.cancel(pid)
-    return {"success": cancelled}
+    return {"success": ytdl.cancel(pid)}
 
