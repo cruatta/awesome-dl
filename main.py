@@ -24,8 +24,8 @@ async def get_tasks(uuid: str) -> Any:
 
 
 @app.get("/task/running")
-def get_running_tasks() -> Any:
-    return {"running": ytdl.running()}
+async def get_running_tasks() -> Any:
+    return await ytdl.running()
 
 
 @app.post("/task/cancel")
