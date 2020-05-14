@@ -18,6 +18,11 @@ def get_tasks() -> Any:
     return {"tasks": ytdl.tasks()}
 
 
+@app.get("/task/stdout/{uuid}")
+async def get_tasks(uuid: str) -> Any:
+    return await ytdl.stdout(uuid)
+
+
 @app.get("/task/running")
 def get_running_tasks() -> Any:
     return {"running": ytdl.running()}
