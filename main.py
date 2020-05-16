@@ -9,8 +9,7 @@ ytdl = YTDL()
 
 @app.post("/ytdl/task")
 async def add_task(task: DownloadRequest) -> SubmittedTask:
-    task = await ytdl.add(task)
-    return task
+    return await ytdl.add(task)
 
 
 @app.get("/ytdl/task")
