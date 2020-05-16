@@ -27,7 +27,8 @@ class YTDL(object):
     async def add(self, task: DownloadRequest) -> SubmittedTask:
         self.task_futures = self._remove_exited(self.task_futures)
         sub = SubmittedTask.create(task, str(uuid.uuid4()), str(datetime.now()))
-        process: Process = await create_subprocess_exec(sys.executable, "-m", "youtube_dl", sub.url, "--newline", stdout=PIPE)
+        args = [sub.url, "--newline"]
+        process: Process = await create_subprocess_exec(sys.executable, "-m", "youtube_dl", *args, stdout=PIPE)
         self.task_futures.append((process, sub))
         return sub
 

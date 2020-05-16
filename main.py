@@ -7,28 +7,28 @@ app = FastAPI()
 ytdl = YTDL()
 
 
-@app.post("/task")
+@app.post("/ytdl/task")
 async def add_task(task: DownloadRequest) -> SubmittedTask:
     task = await ytdl.add(task)
     return task
 
 
-@app.get("/task")
+@app.get("/ytdl/task")
 def get_tasks() -> Any:
-    return {"tasks": ytdl.tasks()}
+    return ytdl.tasks()
 
 
-@app.get("/task/stdout/{uuid}")
-async def get_tasks(uuid: str) -> Any:
+@app.get("/ytdl/task/stdout/{uuid}")
+async def get_stdout(uuid: str) -> Any:
     return await ytdl.stdout(uuid)
 
 
-@app.get("/task/running")
+@app.get("/ytdl/task/running")
 async def get_running_tasks() -> Any:
     return await ytdl.running()
 
 
-@app.post("/task/cancel")
+@app.post("/ytdl/task/cancel")
 def cancel_task(pid: PID) -> Any:
     return {"success": ytdl.cancel(pid)}
 
