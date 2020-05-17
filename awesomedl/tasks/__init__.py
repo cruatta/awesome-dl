@@ -1,5 +1,5 @@
 from typing import *
-from awesomedl.model import SubmittedTask
+from awesomedl.model import SubmittedTaskModel
 from asyncio.subprocess import Process, create_subprocess_exec, PIPE
 import sys
 
@@ -7,7 +7,7 @@ import sys
 
 
 class DownloadTask(object):
-    def submitted_task(self) -> SubmittedTask:
+    def submitted_task(self) -> SubmittedTaskModel:
         raise Exception("Unimplemented")
 
     async def process(self) -> Process:
@@ -15,10 +15,10 @@ class DownloadTask(object):
 
 
 class YTDLDownloadTask(DownloadTask):
-    def __init__(self, sub_task: SubmittedTask):
+    def __init__(self, sub_task: SubmittedTaskModel):
         self.sub_task = sub_task
 
-    def submitted_task(self) -> SubmittedTask:
+    def submitted_task(self) -> SubmittedTaskModel:
         return self.sub_task
 
     async def process(self) -> Process:

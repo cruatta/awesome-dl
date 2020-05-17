@@ -1,19 +1,19 @@
 from pydantic import BaseModel
 
 
-class DownloadRequest(BaseModel):
+class DownloadRequestModel(BaseModel):
     url: str
 
 
-class SubmittedTask(BaseModel):
+class SubmittedTaskModel(BaseModel):
     uuid: str
     url: str
     start_time: str
 
     @staticmethod
-    def create(d: DownloadRequest, uuid: str, start_time: str):
+    def create(d: DownloadRequestModel, uuid: str, start_time: str):
         d = {"url": str(d.url), "uuid": str(uuid), "start_time": start_time}
-        return SubmittedTask(**d)
+        return SubmittedTaskModel(**d)
 
 
 class ProgressModel(BaseModel):
@@ -32,17 +32,17 @@ class ProgressModel(BaseModel):
         return ProgressModel.create("N/A", "N/A", "N/A", "N/A")
 
 
-class TaskProgress(BaseModel):
-    task: SubmittedTask
+class TaskProgressModel(BaseModel):
+    task: SubmittedTaskModel
     progress: ProgressModel
 
     @staticmethod
-    def create(task: SubmittedTask, progress: ProgressModel):
+    def create(task: SubmittedTaskModel, progress: ProgressModel):
         d = {"task": task, "progress": progress}
-        return TaskProgress(**d)
+        return TaskProgressModel(**d)
 
 
-class UUID(BaseModel):
+class UUIDModel(BaseModel):
     uuid: str
 
 

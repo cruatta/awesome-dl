@@ -18,22 +18,22 @@ class YTDL(object):
         out: str = bytes.decode(await sr.readline()) if sr else "<no output>"
         return out
 
-    async def add(self, task: DownloadRequest) -> SubmittedTask:
-        sub = SubmittedTask.create(task, str(uuid.uuid4()), str(datetime.now()))
+    async def add(self, task: DownloadRequestModel) -> SubmittedTaskModel:
+        sub = SubmittedTaskModel.create(task, str(uuid.uuid4()), str(datetime.now()))
         down = YTDLDownloadTask(sub)
         await self.task_queue.add(down)
         return sub
 
-    def tasks(self) -> List[SubmittedTask]:
+    def tasks(self) -> List[SubmittedTaskModel]:
         return [f.submitted_task() for f in self.task_queue.view_task_queue()]
 
-    async def running(self) -> List[TaskProgress]:
+    async def running(self) -> List[TaskProgressModel]:
         _running = list()
         for f in self.task_queue.view_worker_tasks():
             if f[1].pid:
                 maybe_progress: Optional[ProgressModel] = cli_dl_output_parser(await self._stream_to_str(f[1].stdout))
                 progress: ProgressModel = maybe_progress if maybe_progress else ProgressModel.na()
-                _running.append(TaskProgress.create(f[0].submitted_task(), progress))
+                _running.append(TaskProgressModel.create(f[0].submitted_task(), progress))
         return _running
 
     async def stdout(self, _uuid: str) -> List[StdoutModel]:
@@ -43,7 +43,7 @@ class YTDL(object):
                 return list(StdoutModel.create(_uuid, stdout))
         return list()
 
-    def cancel(self, pid: UUID) -> bool:
+    def cancel(self, pid: UUIDModel) -> bool:
         for f in self.task_queue.view_worker_tasks():
             if pid.uuid == f[0].submitted_task().uuid:
                 try:
