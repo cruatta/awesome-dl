@@ -1,10 +1,12 @@
 from awesomedl.model import *
+from awesomedl.tasks.queue import TaskQueue
 from awesomedl.backend.ytdl import YTDL
 from fastapi import FastAPI
 from typing import *
 
 app = FastAPI()
-ytdl = YTDL()
+task_queue = TaskQueue()
+ytdl = YTDL(task_queue)
 
 
 @app.post("/ytdl/task")
@@ -12,22 +14,22 @@ async def add_task(task: DownloadRequest) -> SubmittedTask:
     return await ytdl.add(task)
 
 
-@app.get("/ytdl/task")
+@app.get("/task")
 def get_tasks() -> Any:
     return ytdl.tasks()
 
 
-@app.get("/ytdl/task/stdout/{uuid}")
+@app.get("/task/stdout/{uuid}")
 async def get_stdout(uuid: str) -> Any:
     return await ytdl.stdout(uuid)
 
 
-@app.get("/ytdl/task/running")
+@app.get("/task/running")
 async def get_running_tasks() -> Any:
     return await ytdl.running()
 
 
-@app.post("/ytdl/task/cancel")
-def cancel_task(pid: PID) -> Any:
+@app.post("/task/cancel")
+def cancel_task(pid: UUID) -> Any:
     return {"success": ytdl.cancel(pid)}
 

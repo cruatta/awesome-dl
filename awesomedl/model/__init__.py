@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import *
 
 
 class DownloadRequest(BaseModel):
@@ -33,17 +32,17 @@ class ProgressModel(BaseModel):
         return ProgressModel.create("N/A", "N/A", "N/A", "N/A")
 
 
-class SubmittedProgress(BaseModel):
+class TaskProgress(BaseModel):
     task: SubmittedTask
     progress: ProgressModel
 
     @staticmethod
     def create(task: SubmittedTask, progress: ProgressModel):
         d = {"task": task, "progress": progress}
-        return SubmittedProgress(**d)
+        return TaskProgress(**d)
 
 
-class PID(BaseModel):
+class UUID(BaseModel):
     uuid: str
 
 
