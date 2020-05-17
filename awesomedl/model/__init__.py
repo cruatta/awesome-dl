@@ -8,11 +8,12 @@ class DownloadRequestModel(BaseModel):
 class SubmittedTaskModel(BaseModel):
     uuid: str
     url: str
-    start_time: str
+    submitted_ts: str
+    cancelled: bool
 
     @staticmethod
-    def create(d: DownloadRequestModel, uuid: str, start_time: str):
-        d = {"url": str(d.url), "uuid": str(uuid), "start_time": start_time}
+    def create(d: DownloadRequestModel, uuid: str, submitted_ts: str, cancelled: bool = False):
+        d = {"url": str(d.url), "uuid": str(uuid), "submitted_ts": submitted_ts, "cancelled": cancelled}
         return SubmittedTaskModel(**d)
 
 

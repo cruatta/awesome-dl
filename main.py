@@ -1,6 +1,6 @@
 from awesomedl.model import *
-from awesomedl.tasks.queue import TaskQueue
-from awesomedl.backend.ytdl import YTDL
+from awesomedl.task.queue import TaskQueue
+from awesomedl.service.ytdl import YTDL
 from fastapi import FastAPI
 from typing import *
 
