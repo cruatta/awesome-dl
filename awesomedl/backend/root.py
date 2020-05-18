@@ -9,7 +9,7 @@ class RootBackend(object):
     def __init__(self, task_queue: TaskQueue):
         self.task_queue: TaskQueue = task_queue
 
-    def tasks(self) -> List[SubmittedTaskModel]:
+    def queued(self) -> List[SubmittedTaskModel]:
         return [f.submitted_task() for f in self.task_queue.view_task_queue()]
 
     def cancel(self, _uuid: UUIDModel) -> bool:

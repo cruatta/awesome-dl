@@ -17,8 +17,8 @@ async def add_task(task: DownloadRequestModel) -> SubmittedTaskModel:
 
 
 @app.get("/task/queue")
-def get_task_queue() -> Any:
-    return root.tasks()
+def get_queued_tasks() -> Any:
+    return root.queued()
 
 
 @app.get("/task/stdout/{uuid}")

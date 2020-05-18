@@ -6,11 +6,9 @@ authors = ["Cameron Ruatta <c@ruatta.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 fastapi = "^0.54.1"
 youtube-dl = "^2020.5.8"
-pebble = "^4.5.0"
-pathos = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
 
