@@ -25,20 +25,20 @@ class TaskQueue(object):
         await self._task_queue.put(task)
 
     def cancel(self, _uuid: str) -> bool:
-        for f in self.view_running_tasks():
-            if _uuid == f[0].submitted_task().uuid:
+        for running_task in self.view_running_tasks():
+            if _uuid == running_task[0].submitted_task().uuid:
                 try:
-                    f[1].terminate()
+                    running_task[1].terminate()
                 except ProcessLookupError:
-                    f[0].cancel()
+                    running_task[0].cancel()
                     return True
                 except Exception as e:
                     raise e
-                f[0].cancel()
+                running_task[0].cancel()
                 return True
-        for f in self.view_task_queue():
-            if _uuid == f.submitted_task().uuid:
-                f.cancel()
+        for running_task in self.view_task_queue():
+            if _uuid == running_task.submitted_task().uuid:
+                running_task.cancel()
                 return True
         return False
 
