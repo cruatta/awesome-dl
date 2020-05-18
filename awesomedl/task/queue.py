@@ -36,9 +36,9 @@ class TaskQueue(object):
                     raise e
                 running_task[0].cancel()
                 return True
-        for running_task in self.view_task_queue():
-            if _uuid == running_task.submitted_task().uuid:
-                running_task.cancel()
+        for queued_task in self.view_task_queue():
+            if _uuid == queued_task.submitted_task().uuid:
+                queued_task.cancel()
                 return True
         return False
 
