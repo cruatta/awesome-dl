@@ -1,11 +1,17 @@
 from awesomedl.model import *
 from awesomedl.task import *
+from asyncio import StreamReader
 from typing import *
 import re
 
 
 # [download]   0.7% of 426.81MiB at 312.43KiB/s ETA 23:09
 ytdl_download_pattern = "\[download\]\s+(\S+)\s+of\s+(\S+)\s+at\s+(\S+)\s+ETA\s+(\S+)$"
+
+
+async def stream_to_str(sr: Optional[StreamReader]) -> str:
+    out: str = bytes.decode(await sr.readline()) if sr else "<no output>"
+    return out
 
 
 def progress_output_parser(c: DownloadTask, stdout: str) -> Optional[ProgressModel]:
