@@ -41,12 +41,9 @@ class TaskQueue(object):
                 try:
                     running_task[1].terminate()
                 except ProcessLookupError:
-                    running_task[0].cancel()
-                    return True
+                    pass
                 except Exception as e:
                     raise e
-                running_task[0].cancel()
-                return True
         for queued_task in await self.db.list_all():
             if _uuid == queued_task.submitted_task().uuid:
                 await self.db.cancel(queued_task.submitted_task().uuid)

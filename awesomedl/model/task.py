@@ -24,9 +24,6 @@ class DownloadTask(object):
     def type(self) -> TaskType:
         pass
 
-    def cancel(self):
-        pass
-
     def submitted_task(self) -> SubmittedTaskModel:
         pass
 
@@ -43,9 +40,6 @@ class YTDLDownloadTask(DownloadTask):
 
     def submitted_task(self) -> SubmittedTaskModel:
         return self.task
-
-    def cancel(self):
-        self.task.cancelled = True
 
     async def process(self) -> Optional[Process]:
         args = [self.task.url, "--newline"]
