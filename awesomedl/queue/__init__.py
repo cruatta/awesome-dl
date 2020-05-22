@@ -8,6 +8,10 @@ from fastapi.logger import logger
 from random import random
 
 
+class ShutdownMaxWaitTimeException(Exception):
+    pass
+
+
 class TaskQueue(object):
 
     def __init__(self, db: SQLiteDatasource):
@@ -22,24 +26,29 @@ class TaskQueue(object):
             worker = create_task(self._worker(i, self._init_wait, self._db))
             self._workers.append(worker)
 
-    # async tail recursive function
-    async def wait_for_cancellations(self):
+    async def wait_for_cancellations(self,
+                                     max_wait_time: int,
+                                     wait_time: int = 0) -> Optional[ShutdownMaxWaitTimeException]:
         waiting = [worker for worker in self._workers if worker.cancelled() is False]
-        if len(waiting) > 0:
+
+        if wait_time == max_wait_time:
+            ex = ShutdownMaxWaitTimeException()
+            return ex
+        elif len(waiting) > 0:
             logger.info("Waiting for workers to shut down")
             await sleep(1)
-            return await self.wait_for_cancellations()
+            return await self.wait_for_cancellations(max_wait_time, wait_time + 1)
         else:
-            return
+            return None
 
-    async def kill_workers(self):
+    async def kill_workers(self) -> Optional[ShutdownMaxWaitTimeException]:
         for _id, worker in enumerate(self._workers):
             task: Optional[Tuple[DownloadTask, Process]] = self._running_tasks.get(_id)
             if task is not None:
                 task[1].kill()
             worker.cancel()
 
-        return await self.wait_for_cancellations()
+        return await self.wait_for_cancellations(100)
 
     def view_running_tasks(self) -> Iterator[Tuple[DownloadTask, Process]]:
         return iter(list(self._running_tasks.values()))
@@ -100,6 +109,8 @@ class TaskQueue(object):
             logger.debug("Worker id: {} - Waiting for {}".format(_id, wait_time))
             await sleep(wait_time)
 
+            # Locking reduces transaction deadlocks in sqlite to zero
+            # Pulling one task a time from the queue is acceptable behavior to me
             async with self._lock:
                 logger.debug("Worker id: {} - Getting task".format(_id))
                 maybe_task: DownloadTask = await db.get()
