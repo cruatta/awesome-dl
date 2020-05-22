@@ -52,6 +52,9 @@ class TaskQueue(object):
     async def cleanup(self):
         await self._db.cleanup()
 
+    async def retry_processed_tasks(self):
+        await self._db.retry_processed()
+
     async def cancel(self, _uuid: str) -> bool:
         for running_task in self.view_running_tasks():
             if _uuid == running_task[0].submitted_task().uuid:

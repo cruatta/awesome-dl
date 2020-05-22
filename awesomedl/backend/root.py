@@ -19,6 +19,9 @@ class RootBackend(object):
     async def cleanup(self):
         return await self.task_queue.cleanup()
 
+    async def retry_processed_tasks(self):
+        return await self.task_queue.retry_processed_tasks()
+
     async def running(self) -> List[TaskProgressModel]:
         _running = list()
         for running_task in self.task_queue.view_running_tasks():

@@ -57,6 +57,6 @@ async def cancel_task(pid: UUIDModel) -> Any:
     return {"success": await root.cancel(pid)}
 
 
-@app.post("/task/retry/all", dependencies=[Depends(check_authorization_header)])
-async def cancel_task() -> Any:
-    return await db.retry_all()
+@app.post("/task/retry/processed", dependencies=[Depends(check_authorization_header)])
+async def retry_processed_tasks() -> None:
+    return await root.retry_processed_tasks()

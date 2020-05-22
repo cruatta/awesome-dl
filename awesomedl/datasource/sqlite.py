@@ -78,7 +78,7 @@ class SQLiteDatasource(object):
             else:
                 return None
 
-    async def retry_all(self):
+    async def retry_processed(self):
         update_query = """
         UPDATE Tasks SET status = {} WHERE status = {}
         """.format(TaskStatus.CREATED, TaskStatus.PROCESSING)
