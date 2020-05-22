@@ -20,12 +20,15 @@ class TaskQueue(object):
             worker = create_task(self._worker(i, self._init_wait, self._db))
             self._workers.append(worker)
 
+    # Note that worker.cancel doesn't immediately kill the Task. This takes time.
     def kill_workers(self):
         for _id, worker in enumerate(self._workers):
             task: Optional[Tuple[DownloadTask, Process]] = self._running_tasks.get(_id)
             if task is not None:
-                task[1].terminate()
+                task[1].kill()
             worker.cancel()
+        print("INFO:     Workers killed")
+
 
     def view_running_tasks(self) -> Iterator[Tuple[DownloadTask, Process]]:
         return iter(list(self._running_tasks.values()))
@@ -66,6 +69,7 @@ class TaskQueue(object):
             print("Worker id: {} - Waiting for {}".format(_id, wait_time))
             await sleep(wait_time)
             async with self._lock:
+                print("Worker id: {} - Getting task".format(_id))
                 maybe_task: DownloadTask = await db.get()
             if maybe_task is not None:
                 process = await maybe_task.process()

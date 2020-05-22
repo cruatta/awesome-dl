@@ -65,7 +65,7 @@ class SQLiteDatasource(object):
 
         update_query = """
         UPDATE Tasks SET status = {} WHERE id = :id
-        """.format(TaskStatus.PROCESSED)
+        """.format(TaskStatus.PROCESSING)
 
         async with self.database.transaction():
             row = await self.database.fetch_one(select_query, None)
@@ -82,7 +82,7 @@ class SQLiteDatasource(object):
     async def retry_all(self):
         update_query = """
         UPDATE Tasks SET status = {} WHERE status = {}
-        """.format(TaskStatus.CREATED, TaskStatus.PROCESSED)
+        """.format(TaskStatus.CREATED, TaskStatus.PROCESSING)
 
         await self.database.execute(update_query, None)
 
@@ -135,7 +135,7 @@ class SQLiteDatasource(object):
         return await self._list_by(query)
 
     async def list_running(self) -> List[DownloadTask]:
-        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.PROCESSED)
+        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.PROCESSING)
         return await self._list_by(query)
 
     async def list_queued(self) -> List[DownloadTask]:

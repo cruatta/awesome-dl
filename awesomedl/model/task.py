@@ -9,7 +9,7 @@ from enum import IntEnum, Enum, unique
 
 @unique
 class TaskStatus(IntEnum):
-    PROCESSED = 0
+    PROCESSING = 0
     CANCELLED = 1
     CREATED = 2
     DONE = 3
@@ -48,6 +48,6 @@ class YTDLDownloadTask(DownloadTask):
             return None
         else:
             # Not a huge fan of this mutable state change, but otherwise this is out of sync with the DB
-            self.task.status = TaskStatus.PROCESSED
+            self.task.status = TaskStatus.PROCESSING
             process = await create_subprocess_exec(sys.executable, "-m", "youtube_dl", *args, stdout=PIPE)
             return process
