@@ -29,17 +29,19 @@ class TaskQueue(object):
     async def wait_for_cancellations(self,
                                      max_wait_time: int,
                                      wait_time: int = 0) -> Optional[ShutdownMaxWaitTimeException]:
-        waiting = [worker for worker in self._workers if worker.cancelled() is False]
+        total = len(self._workers)
+        waiting = len([worker for worker in self._workers if worker.cancelled() is False])
 
-        if wait_time == max_wait_time:
+        if waiting == 0:
+            logger.info("Worker pool shut down")
+            return None
+        elif wait_time == max_wait_time:
             ex = ShutdownMaxWaitTimeException()
             return ex
-        elif len(waiting) > 0:
-            logger.info("Waiting for workers to shut down")
+        else:
+            logger.warn("Waiting for {} of {} workers to shut down".format(waiting, total))
             await sleep(1)
             return await self.wait_for_cancellations(max_wait_time, wait_time + 1)
-        else:
-            return None
 
     async def kill_workers(self) -> Optional[ShutdownMaxWaitTimeException]:
         for _id, worker in enumerate(self._workers):
