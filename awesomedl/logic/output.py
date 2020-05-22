@@ -1,5 +1,5 @@
-from awesomedl.model import *
-from awesomedl.task import *
+from awesomedl.model.views import *
+from awesomedl.model.task import *
 from asyncio import StreamReader
 from typing import *
 import re

@@ -1,13 +1,27 @@
 from typing import *
-from awesomedl.model import SubmittedTaskModel
+from awesomedl.model.views import SubmittedTaskModel
 from asyncio.subprocess import Process, create_subprocess_exec, PIPE
 import sys
+from enum import IntEnum, Enum, unique
 
 # These classes are for encapsulating how to turn a url into a process
 
 
+@unique
+class TaskStatus(IntEnum):
+    PROCESSING = 0
+    CANCELLED = 1
+    CREATED = 2
+    DONE = 3
+
+
+@unique
+class TaskType(Enum):
+    YTDL = "ytdl"
+
+
 class DownloadTask(object):
-    def cancel(self):
+    def type(self) -> TaskType:
         pass
 
     def submitted_task(self) -> SubmittedTaskModel:
@@ -21,16 +35,19 @@ class YTDLDownloadTask(DownloadTask):
     def __init__(self, task: SubmittedTaskModel):
         self.task = task
 
+    def type(self) -> TaskType:
+        return TaskType.YTDL
+
     def submitted_task(self) -> SubmittedTaskModel:
         return self.task
 
-    def cancel(self):
-        self.task.cancelled = True
-
     async def process(self) -> Optional[Process]:
         args = [self.task.url, "--newline"]
-        if self.task.cancelled:
+        status = TaskStatus(self.task.status)
+        if status is not TaskStatus.CREATED:
             return None
         else:
+            # Not a huge fan of this mutable state change, but otherwise this is out of sync with the DB
+            self.task.status = TaskStatus.PROCESSING
             process = await create_subprocess_exec(sys.executable, "-m", "youtube_dl", *args, stdout=PIPE)
             return process
