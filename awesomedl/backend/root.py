@@ -22,6 +22,9 @@ class RootBackend(object):
     async def retry_processed_tasks(self):
         return await self.task_queue.retry_processed_tasks()
 
+    async def retry_task(self, _uuid: UUIDModel):
+        return await self.task_queue.retry(_uuid.uuid)
+
     async def running(self) -> List[TaskProgressModel]:
         _running = list()
         for running_task in self.task_queue.view_running_tasks():

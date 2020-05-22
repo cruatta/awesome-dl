@@ -85,19 +85,31 @@ class SQLiteDatasource(object):
 
         await self.database.execute(update_query, None)
 
+    async def retry(self, _uuid: str):
+        update_query = """
+        UPDATE Tasks SET status = {} WHERE uuid = :uuid
+        """.format(TaskStatus.CREATED)
+
+        params = {
+            "uuid": _uuid
+        }
+
+        await self.database.execute(update_query, params)
+
     async def cleanup(self):
         delete_query = """
-        DELETE FROM Tasks WHERE status IN ({}, {})
-        """.format(TaskStatus.DONE, TaskStatus.CANCELLED)
+        DELETE FROM Tasks WHERE status IN ({}, {}, {})
+        """.format(TaskStatus.DONE, TaskStatus.CANCELLED, TaskStatus.FAILED)
 
         await self.database.execute(delete_query, None)
 
-    async def mark_done(self, uuid: str):
+    async def set_status(self, uuid: str, status: TaskStatus):
         update_query = """
-        UPDATE Tasks SET status = {} WHERE uuid = :uuid
-        """.format(TaskStatus.DONE)
+        UPDATE Tasks SET status = :status WHERE uuid = :uuid
+        """
 
         params = {
+            "status": status,
             "uuid": uuid
         }
         await self.database.execute(update_query, params)

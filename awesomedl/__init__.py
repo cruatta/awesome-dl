@@ -49,14 +49,22 @@ async def get_running_tasks() -> Any:
 
 @app.post("/task/cleanup", dependencies=[Depends(check_authorization_header)])
 async def cleanup_tasks() -> Any:
-    return await root.cleanup()
+    await root.cleanup()
+    return {"success": True}
 
 
 @app.post("/task/cancel", dependencies=[Depends(check_authorization_header)])
-async def cancel_task(pid: UUIDModel) -> Any:
-    return {"success": await root.cancel(pid)}
+async def cancel_task(uuid: UUIDModel) -> Any:
+    return {"success": await root.cancel(uuid)}
 
 
 @app.post("/task/retry/processed", dependencies=[Depends(check_authorization_header)])
-async def retry_processed_tasks() -> None:
-    return await root.retry_processed_tasks()
+async def retry_processed_tasks() -> Any:
+    await root.retry_processed_tasks()
+    return {"success": True}
+
+
+@app.post("/task/retry", dependencies=[Depends(check_authorization_header)])
+async def retry_task(uuid: UUIDModel) -> Any:
+    await root.retry_task(uuid)
+    return {"success": True}

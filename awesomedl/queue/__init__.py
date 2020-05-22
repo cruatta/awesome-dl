@@ -22,6 +22,7 @@ class TaskQueue(object):
             worker = create_task(self._worker(i, self._init_wait, self._db))
             self._workers.append(worker)
 
+    # async tail recursive function
     async def wait_for_cancellations(self):
         waiting = [worker for worker in self._workers if worker.cancelled() is False]
         if len(waiting) > 0:
@@ -49,6 +50,9 @@ class TaskQueue(object):
     async def add(self, task: DownloadTask):
         await self._db.put(task)
 
+    async def retry(self, _uuid: str):
+        await self._db.retry(_uuid)
+
     async def cleanup(self):
         await self._db.cleanup()
 
@@ -71,31 +75,45 @@ class TaskQueue(object):
         return False
 
     @staticmethod
-    def _calc_next_wait(wait: int) -> float:
+    def calc_next_wait(wait: int) -> float:
         jitter = random()
         return min(5, wait + jitter)
+
+    @staticmethod
+    async def wait_for_process_status(_id: int, process: Optional[Process]) -> TaskStatus:
+        if process:
+            logger.debug("Worker id: {} - Waiting on task".format(_id))
+            return_code = await process.wait()
+
+            if return_code == 0:
+                return TaskStatus.DONE
+            else:
+                return TaskStatus.FAILED
+        else:
+            return TaskStatus.DONE
 
     async def _worker(self, _id: int, init_wait: int, db: SQLiteDatasource):
         wait_time = init_wait
 
         while True:
-            wait_time = self._calc_next_wait(wait_time)
+            wait_time = self.calc_next_wait(wait_time)
             logger.debug("Worker id: {} - Waiting for {}".format(_id, wait_time))
             await sleep(wait_time)
+
             async with self._lock:
                 logger.debug("Worker id: {} - Getting task".format(_id))
                 maybe_task: DownloadTask = await db.get()
+
             if maybe_task is not None:
                 logger.info("Worker id: {} - Downloading {}".format(_id, maybe_task.submitted_task().url))
-                process = await maybe_task.process()
-                self._running_tasks[_id] = (maybe_task, process)
 
-                if process:
-                    logger.debug("Worker id: {} - Waiting on task".format(_id))
-                    await process.wait()
+                maybe_process = await maybe_task.process()
 
+                self._running_tasks[_id] = (maybe_task, maybe_process)
+                status = await self.wait_for_process_status(_id, maybe_process)
                 del (self._running_tasks[_id])
-                await db.mark_done(maybe_task.submitted_task().uuid)
+
+                await db.set_status(maybe_task.submitted_task().uuid, status)
                 wait_time = init_wait
 
 
