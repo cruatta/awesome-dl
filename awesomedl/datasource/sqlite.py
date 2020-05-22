@@ -74,7 +74,6 @@ class SQLiteDatasource(object):
                     "id": row["id"]
                 }
                 await self.database.execute(update_query, param)
-                print("I ran")
                 return self._row_to_download_task(row)
             else:
                 return None

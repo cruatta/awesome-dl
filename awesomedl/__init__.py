@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from typing import *
 from fastapi import Depends
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from asyncio import sleep
 
 db = SQLiteDatasource()
 app = FastAPI()
@@ -20,19 +19,12 @@ root = RootBackend(task_queue)
 async def startup():
     await db.connect()
     await db.initialize()
-    # await sleep(10)
-    # await db.retry_all()
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    task_queue.kill_workers()
-    print("Waiting for 10 seconds to shut down workers")
-    await sleep(10)
+    await task_queue.kill_workers()
     await db.database.disconnect()
-    for i in range(5, 1):
-        print(i)
-        await sleep(1)
 
 
 @app.post("/ytdl/task", dependencies=[Depends(check_authorization_header)])
@@ -64,3 +56,7 @@ async def cleanup_tasks() -> Any:
 async def cancel_task(pid: UUIDModel) -> Any:
     return {"success": await root.cancel(pid)}
 
+
+@app.post("/task/retry/all", dependencies=[Depends(check_authorization_header)])
+async def cancel_task() -> Any:
+    return await db.retry_all()

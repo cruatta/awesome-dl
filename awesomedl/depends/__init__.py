@@ -3,6 +3,7 @@ from fastapi.security import APIKeyHeader
 from starlette import status
 from hashlib import sha256
 import os
+from fastapi.logger import logger
 
 
 class OK(object):
@@ -14,7 +15,7 @@ ADL_KEY = 'ADL_KEY'
 
 adl_key = os.environ.get(ADL_KEY)
 if not adl_key:
-    print("WARNING:  Missing {} environment variable. API key protection is disabled".format(ADL_KEY))
+    logger.warning("Missing {} environment variable. API key protection is disabled".format(ADL_KEY))
 
 
 def check_authorization_header(x_adl_key: str = Depends(X_ADL_KEY)) -> OK:
