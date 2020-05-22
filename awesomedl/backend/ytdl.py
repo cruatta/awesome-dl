@@ -1,8 +1,9 @@
-from awesomedl.model import *
-from awesomedl.task import YTDLDownloadTask
-from awesomedl.task.queue import TaskQueue
+from awesomedl.model.task import YTDLDownloadTask
+from awesomedl.model.views import DownloadRequestModel, SubmittedTaskModel
+from awesomedl.queue import TaskQueue
 import uuid
 from datetime import datetime
+from awesomedl.model.task import TaskStatus
 
 
 class YTDLBackend(object):
@@ -11,7 +12,7 @@ class YTDLBackend(object):
         self.task_queue: TaskQueue = task_queue
 
     async def add(self, task: DownloadRequestModel) -> SubmittedTaskModel:
-        sub = SubmittedTaskModel.create(task, str(uuid.uuid4()), str(datetime.now()))
+        sub = SubmittedTaskModel.create(task.url, str(uuid.uuid4()), str(datetime.now()), TaskStatus.CREATED)
         down = YTDLDownloadTask(sub)
         await self.task_queue.add(down)
         return sub

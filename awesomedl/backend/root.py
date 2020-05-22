@@ -1,6 +1,6 @@
-from awesomedl.model import *
+from awesomedl.model.views import *
 from awesomedl.logic.output import progress_output_parser, stream_to_str
-from awesomedl.task.queue import TaskQueue
+from awesomedl.queue import TaskQueue
 from typing import *
 
 
@@ -9,11 +9,12 @@ class RootBackend(object):
     def __init__(self, task_queue: TaskQueue):
         self.task_queue: TaskQueue = task_queue
 
-    def queued(self) -> List[SubmittedTaskModel]:
-        return [f.submitted_task() for f in self.task_queue.view_task_queue()]
+    async def queued(self) -> List[SubmittedTaskModel]:
+        tasks_queued = await self.task_queue.view_task_queue()
+        return [task.submitted_task() for task in tasks_queued]
 
-    def cancel(self, _uuid: UUIDModel) -> bool:
-        return self.task_queue.cancel(_uuid.uuid)
+    async def cancel(self, _uuid: UUIDModel) -> bool:
+        return await self.task_queue.cancel(_uuid.uuid)
 
     async def running(self) -> List[TaskProgressModel]:
         _running = list()
