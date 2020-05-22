@@ -16,6 +16,9 @@ class RootBackend(object):
     async def cancel(self, _uuid: UUIDModel) -> bool:
         return await self.task_queue.cancel(_uuid.uuid)
 
+    async def cleanup(self):
+        return await self.task_queue.cleanup()
+
     async def running(self) -> List[TaskProgressModel]:
         _running = list()
         for running_task in self.task_queue.view_running_tasks():

@@ -19,7 +19,7 @@ root = RootBackend(task_queue)
 async def startup():
     await db.connect()
     await db.initialize()
-    await db.retry_all()
+    # await db.retry_all()
 
 
 @app.on_event("shutdown")
@@ -48,7 +48,12 @@ async def get_running_tasks() -> Any:
     return await root.running()
 
 
+@app.post("/task/cleanup", dependencies=[Depends(check_authorization_header)])
+async def cleanup_tasks() -> Any:
+    return await root.cleanup()
+
+
 @app.post("/task/cancel", dependencies=[Depends(check_authorization_header)])
-def cancel_task(pid: UUIDModel) -> Any:
-    return {"success": root.cancel(pid)}
+async def cancel_task(pid: UUIDModel) -> Any:
+    return {"success": await root.cancel(pid)}
 

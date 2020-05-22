@@ -86,6 +86,13 @@ class SQLiteDatasource(object):
 
         await self.database.execute(update_query, None)
 
+    async def cleanup(self):
+        delete_query = """
+        DELETE FROM Tasks WHERE status IN ({}, {})
+        """.format(TaskStatus.DONE, TaskStatus.CANCELLED)
+
+        await self.database.execute(delete_query, None)
+
     async def mark_done(self, uuid: str):
         update_query = """
         UPDATE Tasks SET status = {} WHERE uuid = :uuid
