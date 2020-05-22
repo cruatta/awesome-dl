@@ -24,6 +24,7 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
+    await db.database.disconnect()
     task_queue.kill_workers()
 
 
