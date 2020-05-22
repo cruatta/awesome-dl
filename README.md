@@ -1,6 +1,8 @@
 # awesome-dl
 Yet another download manager? Awesome!
 
+This time it's for your server.
+
 _Built with FastAPI and asyncio for Python 3.7+_
 
 ## Features
@@ -16,4 +18,4 @@ _Built with FastAPI and asyncio for Python 3.7+_
 - Configuration files
 - Single Page Web UI that's not the one from FastAPI
 
-### Made with love in Los Angeles, CA
+### _Made with love in Los Angeles, CA_
