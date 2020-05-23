@@ -1,5 +1,10 @@
 # FreeBSD/FreeNAS
 ## Required
+Create a new jail for awesome-dl and exec into it
+```bash
+jexec <jid> sh
+```
+
 Install the prerequisites, with sudo or as root 
 ```bash
 pkg install sudo python37 py37-pip py37-sqlite3 py37-certifi curl
@@ -16,25 +21,19 @@ pip install awesome_dl*.whl
 Create a user for awesome-dl
 
 ```bash
-pw user add -n awesome -s /sbin/nologin -d /media
+pw user add -n awesome -s /usr/sbin/nologin -d /media
+```
+
+Create a logs directory
+```bash
+mkdir -p /var/log/awesome-dl
+chown -R awesome /var/log/awesome-dl
 ```
 
 Start the awesome-dl manually
 ```bash
-sudo -u awesome python3.7 -m uvicorn awesomedl:app --host 0.0.0.0 --port 8080
+cd /media
+sudo -u awesome python3.7 -m uvicorn awesomedl:app --host 0.0.0.0 --port 8080 2>&1 | tee /var/log/awesome-dl/awesome.log
 ```
 
 or pick your favorite process supervisor or init system to start it automatically
-
-## Optional
-Install fail2ban
-```bash
-pkg install py37-fail2ban
-```
-
-Install nginx or the web server of your choice
-```bash
-pkg install nginx
-```
-
-The rest of the tutorial assumes nginx
