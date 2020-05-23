@@ -2,17 +2,30 @@ from awesomedl.model.views import *
 from awesomedl.queue import TaskQueue
 from awesomedl.backend.ytdl import YTDLBackend
 from awesomedl.backend.root import RootBackend
-from awesomedl.depends import check_authorization_header
+from awesomedl.util import make_check_authorization_header
 from fastapi import FastAPI
 from typing import *
 from fastapi import Depends
 from awesomedl.datasource.sqlite import SQLiteDatasource
+from fastapi.security import APIKeyHeader
+import os
+from fastapi.logger import logger
+
 
 db = SQLiteDatasource()
 app = FastAPI()
 task_queue = TaskQueue(db)
 ytdl = YTDLBackend(task_queue)
 root = RootBackend(task_queue)
+
+X_ADL_KEY = APIKeyHeader(name='X-ADL-Key')
+ADL_KEY = 'ADL_KEY'
+
+adl_key_hashed = os.environ.get(ADL_KEY)
+if not adl_key_hashed:
+    logger.warning("Missing {} environment variable. API key protection is disabled".format(ADL_KEY))
+
+check_authorization_header = make_check_authorization_header(adl_key_hashed, X_ADL_KEY)
 
 
 @app.on_event("startup")

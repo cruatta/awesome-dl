@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+from pydantic import BaseModel
+from uuid import uuid4
+from hashlib import sha256
+
+
+class ADL_KEY(BaseModel):
+    adl_key: str
+    adl_key_hashed: str
+
+
+def make_adl_key():
+    adl_key = str(uuid4())
+    b_x_adl_key = str.encode(adl_key)
+    s256 = sha256()
+    s256.update(b_x_adl_key)
+    adl_key_hashed=s256.hexdigest()
+    return ADL_KEY(adl_key=adl_key, adl_key_hashed=adl_key_hashed)
+
+
+if __name__ == "__main__":
+    print(make_adl_key())
