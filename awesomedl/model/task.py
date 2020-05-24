@@ -32,7 +32,7 @@ class YTDLDownloadTask(DownloadTask):
     async def process(self, config_manager: ConfigManager) -> Optional[Process]:
         args = [self.task.url, "--newline"]
 
-        config_file: Optional[ConfigFile] = config_manager.get(self.type(), self.submitted_task().profile)
+        config_file: Optional[ConfigFile] = config_manager.config(self.type(), self.submitted_task().profile)
 
         if config_file:
             path = str(config_file.path.resolve())

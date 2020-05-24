@@ -15,7 +15,7 @@ class ConfigManager(object):
                              for item in ytdl_root.resolve().iterdir()
                              if item.is_file()}
 
-    def get(self, task: TaskType, profile: Optional[str]) -> Optional[ConfigFile]:
+    def config(self, task: TaskType, profile: Optional[str]) -> Optional[ConfigFile]:
         if task == TaskType.YTDL:
             if profile:
                 return self.ytdl_configs.get(profile)

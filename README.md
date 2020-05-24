@@ -9,6 +9,7 @@ _Built with FastAPI and asyncio for Python 3.7+_
 - Download anything that YoutubeDL can download
 - I think it's pretty fast 
 - _Security features_ like API Keys for API endpoints
+- Configurable profiles determine the format for the downloaded media
 - Configurable number of workers for multiple parallel downloads
 - Downloaders run in separate processes to handle failures safely
 - Download queue persists across application restarts
