@@ -1,8 +1,10 @@
 from pydantic import BaseModel
+from typing import *
 
 
 class DownloadRequestModel(BaseModel):
     url: str
+    profile: Optional[str]
 
 
 class SubmittedTaskModel(BaseModel):
@@ -10,10 +12,11 @@ class SubmittedTaskModel(BaseModel):
     url: str
     submitted_ts: str
     status: int
+    profile: Optional[str] = None
 
     @staticmethod
-    def create(url: str, uuid: str, submitted_ts: str, status: int):
-        return SubmittedTaskModel(url=url, uuid=uuid, submitted_ts=submitted_ts, status=status)
+    def create(url: str, uuid: str, submitted_ts: str, status: int, profile: Optional[str]):
+        return SubmittedTaskModel(url=url, uuid=uuid, submitted_ts=submitted_ts, status=status, profile=profile)
 
 
 class ProgressModel(BaseModel):

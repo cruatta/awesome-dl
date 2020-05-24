@@ -1,24 +1,11 @@
 from typing import *
+from awesomedl.model import TaskType, TaskStatus
 from awesomedl.model.views import SubmittedTaskModel
 from asyncio.subprocess import Process, create_subprocess_exec, PIPE
 import sys
-from enum import IntEnum, Enum, unique
+from awesomedl.config import ConfigManager, ConfigFile
 
 # These classes are for encapsulating how to turn a url into a process
-
-
-@unique
-class TaskStatus(IntEnum):
-    CREATED = 0
-    PROCESSING = 1
-    CANCELLED = 2
-    DONE = 3
-    FAILED = 4
-
-
-@unique
-class TaskType(Enum):
-    YTDL = "ytdl"
 
 
 class DownloadTask(object):
@@ -28,7 +15,7 @@ class DownloadTask(object):
     def submitted_task(self) -> SubmittedTaskModel:
         pass
 
-    async def process(self) -> Optional[Process]:
+    async def process(self, config: ConfigManager) -> Optional[Process]:
         pass
 
 
@@ -42,8 +29,15 @@ class YTDLDownloadTask(DownloadTask):
     def submitted_task(self) -> SubmittedTaskModel:
         return self.task
 
-    async def process(self) -> Optional[Process]:
+    async def process(self, config_manager: ConfigManager) -> Optional[Process]:
         args = [self.task.url, "--newline"]
+
+        config_file: Optional[ConfigFile] = config_manager.get(self.type(), self.submitted_task().profile)
+
+        if config_file:
+            path = str(config_file.path.resolve())
+            args = args + ["--ignore-config", "--config-location", path]
+
         status = TaskStatus(self.task.status)
         if status is not TaskStatus.CREATED:
             return None

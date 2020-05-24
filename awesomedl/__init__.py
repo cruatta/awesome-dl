@@ -1,7 +1,9 @@
 from awesomedl.model.views import *
+from awesomedl.model import TaskType
 from awesomedl.queue import TaskQueue
 from awesomedl.backend.ytdl import YTDLBackend
 from awesomedl.backend.root import RootBackend
+from awesomedl.config import ConfigManager
 from awesomedl.util import make_check_authorization_header
 from fastapi import FastAPI
 from typing import *
@@ -10,18 +12,22 @@ from awesomedl.datasource.sqlite import SQLiteDatasource
 from fastapi.security import APIKeyHeader
 import os
 from fastapi.logger import logger
-
-
-db = SQLiteDatasource()
-app = FastAPI()
-task_queue = TaskQueue(db)
-ytdl = YTDLBackend(task_queue)
-root = RootBackend(task_queue)
+from pathlib import Path
 
 X_ADL_KEY = APIKeyHeader(name='X-ADL-Key')
 ADL_KEY = 'ADL_KEY'
-
 adl_key_hashed = os.environ.get(ADL_KEY)
+
+ytdl_config_path: str = os.environ.get("YTDL_CONFIG_PATH") or str(Path(Path.home(), ".config", "awesome", "ytdl"))
+
+config_manager = ConfigManager(Path(ytdl_config_path))
+db = SQLiteDatasource()
+app = FastAPI()
+task_queue = TaskQueue(db, config_manager)
+ytdl = YTDLBackend(task_queue)
+root = RootBackend(task_queue)
+
+
 if not adl_key_hashed:
     logger.warning("Missing {} environment variable. API key protection is disabled".format(ADL_KEY))
 
@@ -43,6 +49,11 @@ async def shutdown():
 @app.post("/ytdl/task", dependencies=[Depends(check_authorization_header)])
 async def add_task(task: DownloadRequestModel) -> SubmittedTaskModel:
     return await ytdl.add(task)
+
+
+@app.get("/ytdl/formats", dependencies=[Depends(check_authorization_header)])
+def get_ytdl_formats() -> List[str]:
+    return config_manager.list(TaskType.YTDL)
 
 
 @app.get("/task/queue", dependencies=[Depends(check_authorization_header)])

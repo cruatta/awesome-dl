@@ -1,9 +1,10 @@
-from awesomedl.model.task import *
+from awesomedl.model.task import DownloadTask, TaskStatus
 from asyncio.subprocess import Process
 from asyncio import Lock
 from asyncio import create_task, sleep
 from typing import *
 from awesomedl.datasource.sqlite import SQLiteDatasource
+from awesomedl.config import ConfigManager
 from fastapi.logger import logger
 from random import random
 
@@ -14,8 +15,9 @@ class ShutdownMaxWaitTimeException(Exception):
 
 class TaskQueue(object):
 
-    def __init__(self, db: SQLiteDatasource):
-        self._db = db
+    def __init__(self, db: SQLiteDatasource, config_manager: ConfigManager):
+        self.config_manager = config_manager
+        self.db = db
         self._lock = Lock()
         self._num_workers = 4
         self._workers = list()
@@ -23,7 +25,7 @@ class TaskQueue(object):
         self._init_wait = 0
 
         for i in range(self._num_workers):
-            worker = create_task(self._worker(i, self._init_wait, self._db))
+            worker = create_task(self._worker(i, self._init_wait, self.db))
             self._workers.append(worker)
 
     async def wait_for_cancellations(self,
@@ -56,19 +58,19 @@ class TaskQueue(object):
         return iter(list(self._running_tasks.values()))
 
     async def view_task_queue(self) -> List[DownloadTask]:
-        return await self._db.list_all()
+        return await self.db.list_all()
 
     async def add(self, task: DownloadTask):
-        await self._db.put(task)
+        await self.db.put(task)
 
     async def retry(self, _uuid: str):
-        await self._db.retry(_uuid)
+        await self.db.retry(_uuid)
 
     async def cleanup(self):
-        await self._db.cleanup()
+        await self.db.cleanup()
 
     async def retry_processed_tasks(self):
-        await self._db.retry_processed()
+        await self.db.retry_processed()
 
     async def cancel(self, _uuid: str) -> bool:
         for running_task in self.view_running_tasks():
@@ -79,9 +81,9 @@ class TaskQueue(object):
                     pass
                 except Exception as e:
                     raise e
-        for queued_task in await self._db.list_all():
+        for queued_task in await self.db.list_all():
             if _uuid == queued_task.submitted_task().uuid:
-                await self._db.cancel(queued_task.submitted_task().uuid)
+                await self.db.cancel(queued_task.submitted_task().uuid)
                 return True
         return False
 
@@ -115,18 +117,18 @@ class TaskQueue(object):
             # Pulling one task a time from the queue is acceptable behavior to me
             async with self._lock:
                 logger.debug("Worker id: {} - Getting task".format(_id))
-                maybe_task: DownloadTask = await db.get()
+                task: Optional[DownloadTask] = await db.get()
 
-            if maybe_task is not None:
-                logger.info("Worker id: {} - Downloading {}".format(_id, maybe_task.submitted_task().url))
+            if task is not None:
+                logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task().url))
 
-                maybe_process = await maybe_task.process()
+                process: Optional[Process] = await task.process(self.config_manager)
 
-                self._running_tasks[_id] = (maybe_task, maybe_process)
-                status = await self.wait_for_process_status(_id, maybe_process)
+                self._running_tasks[_id] = (task, process)
+                status = await self.wait_for_process_status(_id, process)
                 del (self._running_tasks[_id])
 
-                await db.set_status(maybe_task.submitted_task().uuid, status)
+                await db.set_status(task.submitted_task().uuid, status)
                 wait_time = init_wait
 
 

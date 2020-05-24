@@ -11,6 +11,7 @@ class SQLiteDatasource(object):
             type VARCHAR(100) NOT NULL,
             url VARCHAR(1000),
             status INTEGER,
+            profile VARCHAR(1000),
             submitted_ts VARCHAR(100)
         )
     """
@@ -24,10 +25,11 @@ class SQLiteDatasource(object):
             uuid = row["uuid"]
             url = row["url"]
             task_type = row["type"]
+            profile = row["profile"]
             submitted_ts = row["submitted_ts"]
             status = TaskStatus(row["status"])
 
-            submitted_task = SubmittedTaskModel.create(url, uuid, submitted_ts, status)
+            submitted_task = SubmittedTaskModel.create(url, uuid, submitted_ts, status, profile)
 
             if task_type == repr(TaskType.YTDL):
                 return YTDLDownloadTask(submitted_task)
@@ -45,8 +47,8 @@ class SQLiteDatasource(object):
     async def put(self, task: DownloadTask):
         task_type = repr(task.type())
         query = """
-            INSERT INTO Tasks(uuid, type, url, submitted_ts, status) 
-            VALUES (:uuid, :type, :url, :submitted_ts, :status)
+            INSERT INTO Tasks(uuid, type, url, profile, submitted_ts, status) 
+            VALUES (:uuid, :type, :url, :profile, :submitted_ts, :status)
         """
 
         params = {
@@ -54,6 +56,7 @@ class SQLiteDatasource(object):
             "type": task_type,
             "url": task.submitted_task().url,
             "submitted_ts": task.submitted_task().submitted_ts,
+            "profile": task.submitted_task().profile,
             "status": task.submitted_task().status
         }
         await self.database.execute(query, params)
