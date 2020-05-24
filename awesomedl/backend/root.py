@@ -1,7 +1,7 @@
 from typing import *
 
 from awesomedl.logic.output import progress_output_parser, stream_to_str
-from awesomedl.model.views import *
+from awesomedl.model.views import SubmittedTaskModel, UUIDModel, ProgressModel, StdoutModel, TaskProgressModel
 from awesomedl.queue import TaskQueue
 
 

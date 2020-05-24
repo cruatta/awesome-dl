@@ -3,4 +3,4 @@
 __pycache__/
 dist/
 awesome.db
-
+awesome_dl.egg-info/

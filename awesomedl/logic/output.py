@@ -2,10 +2,9 @@ import re
 from asyncio import StreamReader
 from typing import *
 
-from awesomedl.model.task import *
-from awesomedl.model.views import *
+from awesomedl.model.task import YTDLDownloadTask, DownloadTask
+from awesomedl.model.views import ProgressModel
 
-# [download]   0.7% of 426.81MiB at 312.43KiB/s ETA 23:09
 ytdl_download_pattern = "\[download\]\s+(\S+)\s+of\s+(\S+)\s+at\s+(\S+)\s+ETA\s+(\S+)$"
 
 
