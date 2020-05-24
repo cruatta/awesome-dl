@@ -1,7 +1,8 @@
+from hashlib import sha256
+
 from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader
 from starlette import status
-from hashlib import sha256
 
 
 class OK(object):

@@ -1,5 +1,5 @@
-from databases import Database
 from awesomedl.model.task import *
+from databases import Database
 
 
 class SQLiteDatasource(object):
@@ -155,6 +155,3 @@ class SQLiteDatasource(object):
     async def list_queued(self) -> List[DownloadTask]:
         query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.CREATED)
         return await self._list_by(query)
-
-
-

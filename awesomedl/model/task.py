@@ -1,9 +1,10 @@
-from typing import *
-from awesomedl.model import TaskType, TaskStatus
-from awesomedl.model.views import SubmittedTaskModel
-from asyncio.subprocess import Process, create_subprocess_exec, PIPE
 import sys
-from awesomedl.config import ConfigManager, ConfigFile
+from asyncio.subprocess import PIPE, Process, create_subprocess_exec
+from typing import *
+
+from awesomedl.config import ConfigFile, ConfigManager
+from awesomedl.model import TaskStatus, TaskType
+from awesomedl.model.views import SubmittedTaskModel
 
 # These classes are for encapsulating how to turn a url into a process
 

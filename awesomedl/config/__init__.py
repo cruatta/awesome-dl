@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from typing import *
 from pathlib import Path
+from typing import *
+
 from awesomedl.model.task import TaskType
+from pydantic import BaseModel
 
 
 class ConfigFile(BaseModel):

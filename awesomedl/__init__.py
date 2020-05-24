@@ -1,19 +1,19 @@
-from awesomedl.model.views import *
-from awesomedl.model import TaskType
-from awesomedl.queue import TaskQueue
-from awesomedl.backend.ytdl import YTDLBackend
+import os
+from pathlib import Path
+from typing import *
+
 from awesomedl.backend.root import RootBackend
+from awesomedl.backend.ytdl import YTDLBackend
 from awesomedl.config import ConfigManager
+from awesomedl.datasource.sqlite import SQLiteDatasource
+from awesomedl.model import TaskType
+from awesomedl.model.views import *
+from awesomedl.queue import TaskQueue
 from awesomedl.util import make_check_authorization_header
 from awesomedl.vars import *
-from awesomedl.datasource.sqlite import SQLiteDatasource
-from fastapi import FastAPI
-from typing import *
-from fastapi import Depends
-from fastapi.security import APIKeyHeader
-import os
+from fastapi import Depends, FastAPI
 from fastapi.logger import logger
-from pathlib import Path
+from fastapi.security import APIKeyHeader
 
 X_ADL_KEY = APIKeyHeader(name=API_KEY_HEADER)
 adl_key_hashed = os.environ.get(ADL_KEY)

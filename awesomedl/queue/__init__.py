@@ -1,12 +1,12 @@
-from awesomedl.model.task import DownloadTask, TaskStatus
+from asyncio import Lock, create_task, sleep
 from asyncio.subprocess import Process
-from asyncio import Lock
-from asyncio import create_task, sleep
-from typing import *
-from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.config import ConfigManager
-from fastapi.logger import logger
 from random import random
+from typing import *
+
+from awesomedl.config import ConfigManager
+from awesomedl.datasource.sqlite import SQLiteDatasource
+from awesomedl.model.task import DownloadTask, TaskStatus
+from fastapi.logger import logger
 
 
 class ShutdownMaxWaitTimeException(Exception):
@@ -130,5 +130,3 @@ class TaskQueue(object):
 
                 await db.set_status(task.submitted_task().uuid, status)
                 wait_time = init_wait
-
-

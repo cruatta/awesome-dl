@@ -1,7 +1,8 @@
-from awesomedl.model.views import *
-from awesomedl.logic.output import progress_output_parser, stream_to_str
-from awesomedl.queue import TaskQueue
 from typing import *
+
+from awesomedl.logic.output import progress_output_parser, stream_to_str
+from awesomedl.model.views import *
+from awesomedl.queue import TaskQueue
 
 
 class RootBackend(object):

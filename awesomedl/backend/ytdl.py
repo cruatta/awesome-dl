@@ -1,9 +1,9 @@
-from awesomedl.model.task import YTDLDownloadTask
-from awesomedl.model.views import DownloadRequestModel, SubmittedTaskModel
-from awesomedl.queue import TaskQueue
 import uuid
 from datetime import datetime
-from awesomedl.model.task import TaskStatus
+
+from awesomedl.model.task import TaskStatus, YTDLDownloadTask
+from awesomedl.model.views import DownloadRequestModel, SubmittedTaskModel
+from awesomedl.queue import TaskQueue
 
 
 class YTDLBackend(object):
