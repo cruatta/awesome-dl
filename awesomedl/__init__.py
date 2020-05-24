@@ -5,24 +5,26 @@ from awesomedl.backend.ytdl import YTDLBackend
 from awesomedl.backend.root import RootBackend
 from awesomedl.config import ConfigManager
 from awesomedl.util import make_check_authorization_header
+from awesomedl.vars import *
+from awesomedl.datasource.sqlite import SQLiteDatasource
 from fastapi import FastAPI
 from typing import *
 from fastapi import Depends
-from awesomedl.datasource.sqlite import SQLiteDatasource
 from fastapi.security import APIKeyHeader
 import os
 from fastapi.logger import logger
 from pathlib import Path
 
-X_ADL_KEY = APIKeyHeader(name='X-ADL-Key')
-ADL_KEY = 'ADL_KEY'
+X_ADL_KEY = APIKeyHeader(name=API_KEY_HEADER)
 adl_key_hashed = os.environ.get(ADL_KEY)
 
-ytdl_config_path: str = os.environ.get("YTDL_CONFIG_PATH") or str(Path(Path.home(), ".config", "awesome", "ytdl"))
+ytdl_config_path: str = os.environ.get(YTDL_CONFIG_PATH) or str(Path(Path.home(), ".config", "awesome", "ytdl"))
 
 config_manager = ConfigManager(Path(ytdl_config_path))
 db = SQLiteDatasource()
-app = FastAPI()
+app = FastAPI(title="awesome-dl",
+              description="A download manager for Youtube-DL and beyond",
+              version=VERSION)
 task_queue = TaskQueue(db, config_manager)
 ytdl = YTDLBackend(task_queue)
 root = RootBackend(task_queue)

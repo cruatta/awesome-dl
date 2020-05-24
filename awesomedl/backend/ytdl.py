@@ -1,7 +1,6 @@
 from awesomedl.model.task import YTDLDownloadTask
 from awesomedl.model.views import DownloadRequestModel, SubmittedTaskModel
 from awesomedl.queue import TaskQueue
-from awesomedl.config.__init__ import *
 import uuid
 from datetime import datetime
 from awesomedl.model.task import TaskStatus

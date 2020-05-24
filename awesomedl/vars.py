@@ -1,0 +1,9 @@
+# App Version
+VERSION = "0.3.0"
+
+# ENVs
+ADL_KEY = "ADL_KEY"
+YTDL_CONFIG_PATH = "YTDL_CONFIG_PATH"
+
+# App specifics
+API_KEY_HEADER = "X-ADL-Key"
