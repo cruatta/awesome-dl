@@ -1,5 +1,9 @@
-from awesomedl.model.task import *
+from awesomedl.model.views import SubmittedTaskModel
+from awesomedl.model.task import DownloadTask, YTDLDownloadTask
+from awesomedl.model import TaskStatus, TaskType
 from databases import Database
+
+from typing import *
 
 
 class SQLiteDatasource(object):

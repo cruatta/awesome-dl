@@ -5,7 +5,8 @@ from typing import *
 
 from awesomedl.config import ConfigManager
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model.task import DownloadTask, TaskStatus
+from awesomedl.model.task import DownloadTask
+from awesomedl.model import TaskStatus
 from fastapi.logger import logger
 
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import *
 
-from awesomedl.model.task import TaskType
+from awesomedl.model import TaskType
 from pydantic import BaseModel
 
 
