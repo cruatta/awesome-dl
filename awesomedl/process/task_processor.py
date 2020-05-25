@@ -5,6 +5,7 @@ import sys
 from awesomedl.config import ConfigManager, ConfigFile
 from awesomedl.model import TaskStatus, TaskType
 from awesomedl.model.task import DownloadTask, YTDLDownloadTask
+from fastapi.logger import logger
 
 
 class TaskProcessor(object):
@@ -13,21 +14,23 @@ class TaskProcessor(object):
         self.config_manager = config_manager
 
     async def process(self, task: DownloadTask) -> Optional[Process]:
-        if task.type() == TaskType.YTDL:
+        if isinstance(task, YTDLDownloadTask):
+            logger.info("is instance YTDL")
             return await self.ytdl_process(task)
         else:
             return None
 
     async def ytdl_process(self, task: YTDLDownloadTask) -> Optional[Process]:
-        add_args = [task.submitted_task().url, "--newline"]
+        add_args = [task.submitted_task.url, "--newline"]
 
-        config_file: Optional[ConfigFile] = self.config_manager.config(task.type(), task.submitted_task().profile)
+        config_file: Optional[ConfigFile] = self.config_manager.config(task.type, task.submitted_task.profile)
 
         if config_file:
             path = str(config_file.path.resolve())
             add_args = add_args + ["--ignore-config", "--config-location", path]
 
-        status = TaskStatus(task.submitted_task().status)
+        status = TaskStatus(task.submitted_task.status)
+        logger.debug("Task: {} - Status is {}".format(task.submitted_task.uuid, status))
         if status is not TaskStatus.PROCESSING:
             return None
         else:

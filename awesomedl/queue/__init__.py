@@ -1,10 +1,10 @@
 from asyncio import Lock, create_task, sleep
 from asyncio.subprocess import Process
+from asyncio.tasks import Task
 from random import random
 from typing import *
 
 from awesomedl.process.task_processor import TaskProcessor
-from awesomedl.config import ConfigManager
 from awesomedl.datasource.sqlite import SQLiteDatasource
 from awesomedl.model.task import DownloadTask
 from awesomedl.model import TaskStatus
@@ -20,11 +20,11 @@ class TaskQueue(object):
     def __init__(self, db: SQLiteDatasource, task_processor: TaskProcessor):
         self.task_processor = task_processor
         self.db = db
-        self._lock = Lock()
-        self._num_workers = 4
-        self._workers = list()
-        self._running_tasks: Dict[int, (DownloadTask, Process)] = dict()
-        self._init_wait = 0
+        self._lock: Lock = Lock()
+        self._num_workers: int = 4
+        self._workers: List[Task] = list()
+        self._running_tasks: Dict[int, Tuple[DownloadTask, Process]] = dict()
+        self._init_wait: float = 0
 
         for i in range(self._num_workers):
             worker = create_task(self._worker(i, self._init_wait, self.db))
@@ -76,7 +76,7 @@ class TaskQueue(object):
 
     async def cancel(self, _uuid: str) -> bool:
         for running_task in self.view_running_tasks():
-            if _uuid == running_task[0].submitted_task().uuid:
+            if _uuid == running_task[0].submitted_task.uuid:
                 try:
                     running_task[1].terminate()
                 except ProcessLookupError:
@@ -84,21 +84,23 @@ class TaskQueue(object):
                 except Exception as e:
                     raise e
         for queued_task in await self.db.list_all():
-            if _uuid == queued_task.submitted_task().uuid:
-                await self.db.cancel(queued_task.submitted_task().uuid)
+            if _uuid == queued_task.submitted_task.uuid:
+                await self.db.cancel(queued_task.submitted_task.uuid)
                 return True
         return False
 
     @staticmethod
-    def calc_next_wait(wait: int) -> float:
+    def calc_next_wait(wait: float) -> float:
         jitter = random()
         return min(5, wait + jitter)
 
     @staticmethod
     async def wait_for_process_status(_id: int, process: Optional[Process]) -> TaskStatus:
+        logger.info("Worker id: {} - Waiting for process".format(_id))
         if process:
-            logger.debug("Worker id: {} - Waiting on task".format(_id))
+            logger.info("Worker id: {} - Waiting on task".format(_id))
             return_code = await process.wait()
+            logger.info("Worker id: {} - Return code: {}".format(_id, return_code))
 
             if return_code == 0:
                 return TaskStatus.DONE
@@ -107,7 +109,7 @@ class TaskQueue(object):
         else:
             return TaskStatus.DONE
 
-    async def _worker(self, _id: int, init_wait: int, db: SQLiteDatasource):
+    async def _worker(self, _id: int, init_wait: float, db: SQLiteDatasource):
         wait_time = init_wait
 
         while True:
@@ -122,13 +124,16 @@ class TaskQueue(object):
                 task: Optional[DownloadTask] = await db.get()
 
             if task is not None:
-                logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task().url))
+                logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task.url))
 
                 process: Optional[Process] = await self.task_processor.process(task)
 
-                self._running_tasks[_id] = (task, process)
-                status = await self.wait_for_process_status(_id, process)
-                del (self._running_tasks[_id])
+                if process is not None:
+                    self._running_tasks[_id] = (task, process)
+                    status = await self.wait_for_process_status(_id, process)
+                    del (self._running_tasks[_id])
+                else:
+                    status = await self.wait_for_process_status(_id, process)
 
-                await db.set_status(task.submitted_task().uuid, status)
+                await db.set_status(task.submitted_task.uuid, status)
                 wait_time = init_wait

@@ -1,4 +1,5 @@
 from hashlib import sha256
+from typing import *
 
 from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader
@@ -9,7 +10,7 @@ class OK(object):
     pass
 
 
-def make_check_authorization_header(adl_key_hashed: str, x_adl_key_header: APIKeyHeader):
+def make_check_authorization_header(adl_key_hashed: Optional[str], x_adl_key_header: APIKeyHeader):
     def check_authorization_header(x_adl_key: str = Depends(x_adl_key_header)) -> OK:
 
         if adl_key_hashed:

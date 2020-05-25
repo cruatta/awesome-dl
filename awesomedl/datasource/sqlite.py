@@ -49,19 +49,19 @@ class SQLiteDatasource(object):
         await self.database.execute(query=self.create_tbl_sub_tasks)
 
     async def put(self, task: DownloadTask):
-        task_type = repr(task.type())
+        task_type = repr(task.type)
         query = """
             INSERT INTO Tasks(uuid, type, url, profile, submitted_ts, status) 
             VALUES (:uuid, :type, :url, :profile, :submitted_ts, :status)
         """
 
         params = {
-            "uuid": task.submitted_task().uuid,
+            "uuid": task.submitted_task.uuid,
             "type": task_type,
-            "url": task.submitted_task().url,
-            "submitted_ts": task.submitted_task().submitted_ts,
-            "profile": task.submitted_task().profile,
-            "status": task.submitted_task().status
+            "url": task.submitted_task.url,
+            "submitted_ts": task.submitted_task.submitted_ts,
+            "profile": task.submitted_task.profile,
+            "status": task.submitted_task.status
         }
         await self.database.execute(query, params)
 
@@ -81,7 +81,10 @@ class SQLiteDatasource(object):
                     "id": row["id"]
                 }
                 await self.database.execute(update_query, param)
-                return self._row_to_download_task(row)
+                task = self._row_to_download_task(row)
+                if task is not None:
+                    task.submitted_task.status = TaskStatus.PROCESSING
+                return task
             else:
                 return None
 
