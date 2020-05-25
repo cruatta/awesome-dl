@@ -3,6 +3,7 @@ from asyncio.subprocess import Process
 from random import random
 from typing import *
 
+from awesomedl.process.task_processor import TaskProcessor
 from awesomedl.config import ConfigManager
 from awesomedl.datasource.sqlite import SQLiteDatasource
 from awesomedl.model.task import DownloadTask
@@ -16,8 +17,8 @@ class ShutdownMaxWaitTimeException(Exception):
 
 class TaskQueue(object):
 
-    def __init__(self, db: SQLiteDatasource, config_manager: ConfigManager):
-        self.config_manager = config_manager
+    def __init__(self, db: SQLiteDatasource, task_processor: TaskProcessor):
+        self.task_processor = task_processor
         self.db = db
         self._lock = Lock()
         self._num_workers = 4
@@ -123,7 +124,7 @@ class TaskQueue(object):
             if task is not None:
                 logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task().url))
 
-                process: Optional[Process] = await task.process(self.config_manager)
+                process: Optional[Process] = await self.task_processor.process(task)
 
                 self._running_tasks[_id] = (task, process)
                 status = await self.wait_for_process_status(_id, process)
