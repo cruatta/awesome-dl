@@ -82,6 +82,7 @@ class SQLiteDatasource(object):
                 }
                 await self.database.execute(update_query, param)
                 task = self._row_to_download_task(row)
+                print("WTF")
                 task.submitted_task().status = TaskStatus.PROCESSING
                 return task
             else:
