@@ -1,5 +1,8 @@
 from awesomedl.model.task import *
+from awesomedl.model import TaskStatus
 from databases import Database
+
+from typing import *
 
 
 class SQLiteDatasource(object):
@@ -72,12 +75,15 @@ class SQLiteDatasource(object):
 
         async with self.database.transaction():
             row = await self.database.fetch_one(select_query, None)
+            print("hihihi")
             if row is not None:
                 param = {
                     "id": row["id"]
                 }
                 await self.database.execute(update_query, param)
-                return self._row_to_download_task(row)
+                task = self._row_to_download_task(row)
+                task.submitted_task().status = TaskStatus.PROCESSING
+                return task
             else:
                 return None
 

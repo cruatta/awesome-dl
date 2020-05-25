@@ -3,9 +3,10 @@ from asyncio.subprocess import Process
 from random import random
 from typing import *
 
-from awesomedl.config import ConfigManager
+from awesomedl.process.task_processor import TaskProcessor
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model.task import DownloadTask, TaskStatus
+from awesomedl.model import TaskStatus
+from awesomedl.model.task import DownloadTask
 from fastapi.logger import logger
 
 
@@ -15,9 +16,9 @@ class ShutdownMaxWaitTimeException(Exception):
 
 class TaskQueue(object):
 
-    def __init__(self, db: SQLiteDatasource, config_manager: ConfigManager):
-        self.config_manager = config_manager
-        self.db = db
+    def __init__(self, datasource: SQLiteDatasource, task_processor: TaskProcessor):
+        self.task_processor = task_processor
+        self.datasource = datasource
         self._lock = Lock()
         self._num_workers = 4
         self._workers = list()
@@ -25,7 +26,7 @@ class TaskQueue(object):
         self._init_wait = 0
 
         for i in range(self._num_workers):
-            worker = create_task(self._worker(i, self._init_wait, self.db))
+            worker = create_task(self._worker(i, self._init_wait, self.datasource))
             self._workers.append(worker)
 
     async def wait_for_cancellations(self,
@@ -58,19 +59,19 @@ class TaskQueue(object):
         return iter(list(self._running_tasks.values()))
 
     async def view_task_queue(self) -> List[DownloadTask]:
-        return await self.db.list_all()
+        return await self.datasource.list_all()
 
     async def add(self, task: DownloadTask):
-        await self.db.put(task)
+        await self.datasource.put(task)
 
     async def retry(self, _uuid: str):
-        await self.db.retry(_uuid)
+        await self.datasource.retry(_uuid)
 
     async def cleanup(self):
-        await self.db.cleanup()
+        await self.datasource.cleanup()
 
     async def retry_processed_tasks(self):
-        await self.db.retry_processed()
+        await self.datasource.retry_processed()
 
     async def cancel(self, _uuid: str) -> bool:
         for running_task in self.view_running_tasks():
@@ -81,9 +82,9 @@ class TaskQueue(object):
                     pass
                 except Exception as e:
                     raise e
-        for queued_task in await self.db.list_all():
+        for queued_task in await self.datasource.list_all():
             if _uuid == queued_task.submitted_task().uuid:
-                await self.db.cancel(queued_task.submitted_task().uuid)
+                await self.datasource.cancel(queued_task.submitted_task().uuid)
                 return True
         return False
 
@@ -105,28 +106,30 @@ class TaskQueue(object):
         else:
             return TaskStatus.DONE
 
-    async def _worker(self, _id: int, init_wait: int, db: SQLiteDatasource):
+    async def _worker(self, _id: int, init_wait: int, datasource: SQLiteDatasource):
         wait_time = init_wait
 
         while True:
             wait_time = self.calc_next_wait(wait_time)
-            logger.debug("Worker id: {} - Waiting for {}".format(_id, wait_time))
+            logger.info("Worker id: {} - Waiting for {}".format(_id, wait_time))
             await sleep(wait_time)
 
             # Locking reduces transaction deadlocks in sqlite to zero
             # Pulling one task a time from the queue is acceptable behavior to me
             async with self._lock:
-                logger.debug("Worker id: {} - Getting task".format(_id))
-                task: Optional[DownloadTask] = await db.get()
+                logger.info("Worker id: {} - Getting task".format(_id))
+                task: Optional[DownloadTask] = await datasource.get()
+                logger.info(task)
 
             if task is not None:
                 logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task().url))
 
-                process: Optional[Process] = await task.process(self.config_manager)
+                process: Optional[Process] = await self.task_processor.process(task)
 
                 self._running_tasks[_id] = (task, process)
+
                 status = await self.wait_for_process_status(_id, process)
                 del (self._running_tasks[_id])
 
-                await db.set_status(task.submitted_task().uuid, status)
+                await datasource.set_status(task.submitted_task().uuid, status)
                 wait_time = init_wait

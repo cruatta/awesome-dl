@@ -1,4 +1,4 @@
-from awesomedl.logic.output import ytdl_output_progress_parser
+from awesomedl.process.output import ytdl_output_progress_parser
 
 
 def test_ytdl_output_progress_parser():

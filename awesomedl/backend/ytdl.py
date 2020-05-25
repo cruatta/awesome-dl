@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from awesomedl.config import ConfigManager, ConfigFile
 from awesomedl.model import TaskStatus
 from awesomedl.model.task import YTDLDownloadTask
 from awesomedl.model.views import DownloadRequestModel, SubmittedTaskModel
@@ -10,7 +11,7 @@ from awesomedl.queue import TaskQueue
 class YTDLBackend(object):
 
     def __init__(self, task_queue: TaskQueue):
-        self.task_queue: TaskQueue = task_queue
+        self.task_queue = task_queue
 
     async def add(self, task: DownloadRequestModel) -> SubmittedTaskModel:
         sub = SubmittedTaskModel.create(task.url, str(uuid.uuid4()), str(datetime.now()), TaskStatus.CREATED,
