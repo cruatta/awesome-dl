@@ -1,9 +1,10 @@
 version: 2.1
 
 jobs:
-  build:
+  setup:
     docker:
       - image: circleci/python:3.8.3
     steps:
       - checkout
-      - run: ls -la
+      - run: pip install poetry
+      - run: poetry install
