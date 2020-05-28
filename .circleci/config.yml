@@ -6,5 +6,7 @@ jobs:
       - image: circleci/python:3.8.3
     steps:
       - checkout
-      - run: pip install poetry
-      - run: poetry install
+      - run:
+          command: pip install poetry
+      - run:
+          command: poetry install
