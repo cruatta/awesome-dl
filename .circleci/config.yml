@@ -1,10 +1,14 @@
 version: 2
-
 jobs:
   setup:
     docker:
-      - image: circleci/python:3.8.3
+    - image: circleci/python:3.8.3
     steps:
-      - checkout
-      - run: pip install poetry
-      - run: poetry install
+    - checkout
+    - run: pip install poetry
+    - run: poetry install
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - setup
