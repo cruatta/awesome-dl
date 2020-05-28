@@ -7,6 +7,18 @@ jobs:
     - checkout
     - run: pip install poetry
     - run: poetry install
+  test:
+    docker:
+      - image: circleci/python:3.8.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - run: pip install poetry
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - "/home/circleci/.cache/pypoetry"
 workflows:
   version: 2
   workflow:
