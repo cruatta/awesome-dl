@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 
 jobs:
   setup:
@@ -6,7 +6,5 @@ jobs:
       - image: circleci/python:3.8.3
     steps:
       - checkout
-      - run:
-          command: pip install poetry
-      - run:
-          command: poetry install
+      - run: pip install poetry
+      - run: poetry install
