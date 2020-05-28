@@ -1,21 +1,36 @@
-version: 2.1
-
-orbs:
-  python: circleci/python@0.2.1
-
+version: 2
 jobs:
-  build-and-test:
-    executor: python/default
+  unit-test:
+    docker:
+      - image: circleci/python:3.8.3
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
-      - run:
-          command: ./manage.py test
-          name: Test
+      - restore_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - run: poetry install
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - "/home/circleci/.cache/pypoetry"
+      - run: poetry run pytest
+  mypy:
+    docker:
+      - image: circleci/python:3.8.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - run: poetry install
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - "/home/circleci/.cache/pypoetry"
+      - run: poetry run pytest --mypy
+
 
 workflows:
-  main:
+  version: 2
+  test:
     jobs:
-      - build-and-test
+    - unit-test
+    - mypy

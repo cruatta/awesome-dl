@@ -57,7 +57,7 @@ class TaskQueue(object):
         return await self.wait_for_cancellations(100)
 
     def view_running_tasks(self) -> Iterator[Tuple[DownloadTask, Process]]:
-        return iter(list(self._running_tasks.values()))
+        return iter([task for task in self._running_tasks.values() if not task[1].returncode])
 
     async def view_task_queue(self) -> List[DownloadTask]:
         return await self.db.list_all()
