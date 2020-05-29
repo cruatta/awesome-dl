@@ -3,6 +3,7 @@ from asyncio.subprocess import Process
 from asyncio.tasks import Task
 from random import random
 from typing import *
+from awesomedl.process.task_processor import TaskProcessorException
 
 from awesomedl.process.task_processor import TaskProcessor
 from awesomedl.datasource.sqlite import SQLiteDatasource
@@ -95,9 +96,9 @@ class TaskQueue(object):
         return min(5, wait + jitter)
 
     @staticmethod
-    async def wait_for_process_status(_id: int, process: Optional[Process]) -> TaskStatus:
+    async def wait_for_process_status(_id: int, process: Union[TaskProcessorException, Process]) -> TaskStatus:
         logger.info("Worker id: {} - Waiting for process".format(_id))
-        if process:
+        if isinstance(process, Process):
             logger.info("Worker id: {} - Waiting on task".format(_id))
             return_code = await process.wait()
             logger.info("Worker id: {} - Return code: {}".format(_id, return_code))
@@ -107,7 +108,8 @@ class TaskQueue(object):
             else:
                 return TaskStatus.FAILED
         else:
-            return TaskStatus.DONE
+            logger.warn("Worker id: {} - Process failure: {}".format(_id, process.message))
+            return TaskStatus.FAILED
 
     async def _worker(self, _id: int, init_wait: float, db: SQLiteDatasource):
         wait_time = init_wait
@@ -126,9 +128,9 @@ class TaskQueue(object):
             if task is not None:
                 logger.info("Worker id: {} - Downloading {}".format(_id, task.submitted_task.url))
 
-                process: Optional[Process] = await self.task_processor.process(task)
+                process: Union[TaskProcessorException, Process] = await self.task_processor.process(task)
 
-                if process is not None:
+                if isinstance(process, Process):
                     self._running_tasks[_id] = (task, process)
                     status = await self.wait_for_process_status(_id, process)
                     del (self._running_tasks[_id])
