@@ -1,5 +1,5 @@
 # App Version
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 # ENVs
 ADL_KEY = "ADL_KEY"
