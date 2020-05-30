@@ -25,7 +25,7 @@ jobs:
           key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
             - "/home/circleci/.cache/pypoetry"
-      - run: poetry run pytest --mypy
+      - run: poetry run pytest --mypy -m mypy
 
 
 workflows:
