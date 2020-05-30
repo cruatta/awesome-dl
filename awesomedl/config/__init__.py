@@ -12,9 +12,9 @@ class ConfigFile(BaseModel):
 
 class ConfigManager(object):
     def __init__(self, ytdl_root: Path):
-        self.ytdl_configs = {item.stem: ConfigFile(name=item.stem, path=item)
-                             for item in ytdl_root.resolve().iterdir()
-                             if item.is_file()}
+        self.ytdl_configs: Dict[str, ConfigFile] = {item.stem: ConfigFile(name=item.stem, path=item)
+                                                    for item in ytdl_root.resolve().iterdir()
+                                                    if item.is_file()}
 
     def config(self, task: TaskType, profile: Optional[str]) -> Optional[ConfigFile]:
         if task == TaskType.YTDL:
