@@ -23,7 +23,7 @@ ytdl_config_path: str = os.environ.get(YTDL_CONFIG_PATH) or str(Path(Path.home()
 
 config_manager = ConfigManager(Path(ytdl_config_path))
 task_processor = TaskProcessor(config_manager)
-db = SQLiteDatasource()
+db = SQLiteDatasource('sqlite:///awesome.db')
 app = FastAPI(title="awesome-dl",
               description="A download manager for Youtube-DL and beyond",
               version=VERSION)
@@ -47,7 +47,7 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await task_queue.kill_workers()
-    await db.database.disconnect()
+    await db.disconnect()
 
 
 @app.post("/ytdl/task", dependencies=[Depends(check_authorization_header)])

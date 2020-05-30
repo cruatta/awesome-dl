@@ -20,8 +20,8 @@ class SQLiteDatasource(object):
         )
     """
 
-    def __init__(self):
-        self.database = Database('sqlite:///awesome.db')
+    def __init__(self, db_path: str):
+        self.database = Database(db_path)
 
     @staticmethod
     def _row_to_download_task(row: Optional[Mapping]) -> Optional[DownloadTask]:
@@ -47,6 +47,9 @@ class SQLiteDatasource(object):
 
     async def initialize(self):
         await self.database.execute(query=self.create_tbl_sub_tasks)
+
+    async def disconnect(self):
+        await self.database.disconnect()
 
     async def put(self, task: DownloadTask):
         task_type = repr(task.type)
