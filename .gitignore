@@ -2,7 +2,9 @@
 .idea/
 __pycache__/
 dist/
-awesome.db
 .pytest_cache
 .mypy_cache
 awesome_dl.egg-info
+*.db
+*.db-journal
+.coverage
