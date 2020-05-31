@@ -39,7 +39,18 @@ jobs:
       - run: poetry install
       - *save-cache
       - run: poetry run pytest --mypy -m mypy
-
+  functional-test:
+    docker:
+      - image: circleci/python:3.8.3
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - *restore-cache
+      - run: |
+          docker build -t awesome-dl:latest .
+          docker run -d -p 8080:8080 awesome-dl:latest
+      - run: poetry run pytest test/fun
 
 workflows:
   version: 2
@@ -52,4 +63,6 @@ workflows:
       - mypy:
           requires:
             - build
-
+      - functional-test:
+          requires:
+            - build

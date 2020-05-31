@@ -14,4 +14,6 @@ USER app
 
 WORKDIR /app
 
+RUN mkdir -p /app/.config/awesome/ytdl
+
 CMD ["python3", "-m", "uvicorn", "awesomedl.main:app", "--host", "0.0.0.0", "--port", "8080"]
