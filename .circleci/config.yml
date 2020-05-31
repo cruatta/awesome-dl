@@ -46,5 +46,10 @@ workflows:
   test:
     jobs:
       - build
-      - unit-test
-      - mypy
+      - unit-test:
+          requires:
+            - build
+      - mypy:
+          requires:
+            - build
+
