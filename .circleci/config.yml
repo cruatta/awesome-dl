@@ -49,7 +49,9 @@ jobs:
       - *restore-cache
       - run: poetry install
       - run: mkdir -p /home/circleci/.config/awesome/ytdl
-      - run: python -m uvicorn awesomedl.main:app --host 0.0.0.0 --port 8080
+      - run:
+          name: Run app
+          command: python -m uvicorn awesomedl.main:app --host 0.0.0.0 --port 8080
           background: true
       - run: poetry run pytest test/fun
 
