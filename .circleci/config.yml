@@ -47,6 +47,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - *restore-cache
+      - run: poetry install
       - run: mkdir -p /home/circleci/.config/awesome/ytdl
       - run: python -m uvicorn awesomedl.main:app --host 0.0.0.0 --port 8080
           background: true
