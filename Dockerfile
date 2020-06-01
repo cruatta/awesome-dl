@@ -1,6 +1,6 @@
 FROM python:3.7
 
-COPY ./dist /dist
+COPY --from=dist /venv /venv
 
 WORKDIR /dist
 

@@ -47,9 +47,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - *restore-cache
-      - run: |
-          docker build -t awesome-dl:latest .
-          docker run -d -p 8080:8080 awesome-dl:latest
+      - run: mkdir -p /home/circleci/.config/awesome/ytdl
+      - run: python -m uvicorn awesomedl.main:app --host 0.0.0.0 --port 8080
+          background: true
       - run: poetry run pytest test/fun
 
 workflows:
