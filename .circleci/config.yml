@@ -51,7 +51,7 @@ jobs:
       - run: mkdir -p /home/circleci/.config/awesome/ytdl
       - run:
           name: Run app
-          command: python -m uvicorn awesomedl.main:app --host 0.0.0.0 --port 8080
+          command: python -m uvicorn awesomedl.main:app --host 127.0.0.1 --port 8080
           background: true
       - run: poetry run pytest test/fun
 
