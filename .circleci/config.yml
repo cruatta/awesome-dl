@@ -1,36 +1,71 @@
 version: 2
+
+aliases:
+  - &restore-cache
+    restore_cache:
+      key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+  - &save-cache
+    save_cache:
+      key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      paths:
+        - "/home/circleci/.cache/pypoetry"
+        - "/home/circleci/awesome-dl/dist"
+
 jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8.3
+    steps:
+      - checkout
+      - *restore-cache
+      - run: poetry install
+      - run: poetry build
+      - *save-cache
   unit-test:
     docker:
       - image: circleci/python:3.8.3
     steps:
       - checkout
-      - restore_cache:
-          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - *restore-cache
       - run: poetry install
-      - save_cache:
-          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths:
-            - "/home/circleci/.cache/pypoetry"
-      - run: poetry run pytest --cov=awesomedl
+      - *save-cache
+      - run: poetry run pytest test/unit/ --cov=awesomedl
   mypy:
     docker:
       - image: circleci/python:3.8.3
     steps:
       - checkout
-      - restore_cache:
-          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - *restore-cache
       - run: poetry install
-      - save_cache:
-          key: cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths:
-            - "/home/circleci/.cache/pypoetry"
+      - *save-cache
       - run: poetry run pytest --mypy -m mypy
-
+  functional-test:
+    docker:
+      - image: circleci/python:3.8.3
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - *restore-cache
+      - run: poetry install
+      - run: mkdir -p /home/circleci/.config/awesome/ytdl
+      - run:
+          name: Run app
+          command: poetry run python -m uvicorn awesomedl.main:app --host 127.0.0.1 --port 8080
+          background: true
+      - run: poetry run pytest test/fun
 
 workflows:
   version: 2
   test:
     jobs:
-    - unit-test
-    - mypy
+      - build
+      - unit-test:
+          requires:
+            - build
+      - mypy:
+          requires:
+            - build
+      - functional-test:
+          requires:
+            - build
