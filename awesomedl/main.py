@@ -66,8 +66,8 @@ async def get_queued_tasks() -> List[SubmittedTaskModel]:
 
 
 @app.get("/task/stdout/{uuid}", dependencies=[Depends(check_authorization_header)])
-async def get_stdout(uuid: UUIDModel) -> List[StdoutModel]:
-    return await root.stdout(uuid)
+async def get_stdout(uuid: str) -> List[StdoutModel]:
+    return await root.stdout(UUIDModel(uuid=uuid))
 
 
 @app.get("/task/running", dependencies=[Depends(check_authorization_header)])
@@ -76,20 +76,24 @@ async def get_running_tasks() -> List[TaskProgressModel]:
 
 
 @app.post("/task/cleanup", dependencies=[Depends(check_authorization_header)])
-async def cleanup_tasks() -> None:
-    return await root.cleanup()
+async def cleanup_tasks() -> str:
+    await root.cleanup()
+    return "OK"
 
 
 @app.post("/task/cancel", dependencies=[Depends(check_authorization_header)])
-async def cancel_task(uuid: UUIDModel) -> bool:
-    return await root.cancel(uuid)
+async def cancel_task(uuid: UUIDModel) -> str:
+    await root.cancel(uuid)
+    return "OK"
 
 
 @app.post("/task/retry/processed", dependencies=[Depends(check_authorization_header)])
-async def retry_processed_tasks() -> None:
-    return await root.retry_processed_tasks()
+async def retry_processed_tasks() -> str:
+    await root.retry_processed_tasks()
+    return "OK"
 
 
 @app.post("/task/retry", dependencies=[Depends(check_authorization_header)])
-async def retry_task(uuid: UUIDModel) -> None:
-    return await root.retry_task(uuid)
+async def retry_task(uuid: UUIDModel) -> str:
+    await root.retry_task(uuid)
+    return "OK"
