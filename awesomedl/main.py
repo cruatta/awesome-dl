@@ -61,38 +61,35 @@ def get_ytdl_formats() -> List[str]:
 
 
 @app.get("/task/queue", dependencies=[Depends(check_authorization_header)])
-async def get_queued_tasks() -> Any:
+async def get_queued_tasks() -> List[SubmittedTaskModel]:
     return await root.queued()
 
 
 @app.get("/task/stdout/{uuid}", dependencies=[Depends(check_authorization_header)])
-async def get_stdout(uuid: str) -> Any:
+async def get_stdout(uuid: UUIDModel) -> List[StdoutModel]:
     return await root.stdout(uuid)
 
 
 @app.get("/task/running", dependencies=[Depends(check_authorization_header)])
-async def get_running_tasks() -> Any:
+async def get_running_tasks() -> List[TaskProgressModel]:
     return await root.running()
 
 
 @app.post("/task/cleanup", dependencies=[Depends(check_authorization_header)])
-async def cleanup_tasks() -> Any:
-    await root.cleanup()
-    return {"success": True}
+async def cleanup_tasks() -> None:
+    return await root.cleanup()
 
 
 @app.post("/task/cancel", dependencies=[Depends(check_authorization_header)])
-async def cancel_task(uuid: UUIDModel) -> Any:
-    return {"success": await root.cancel(uuid)}
+async def cancel_task(uuid: UUIDModel) -> bool:
+    return await root.cancel(uuid)
 
 
 @app.post("/task/retry/processed", dependencies=[Depends(check_authorization_header)])
-async def retry_processed_tasks() -> Any:
-    await root.retry_processed_tasks()
-    return {"success": True}
+async def retry_processed_tasks() -> None:
+    return await root.retry_processed_tasks()
 
 
 @app.post("/task/retry", dependencies=[Depends(check_authorization_header)])
-async def retry_task(uuid: UUIDModel) -> Any:
-    await root.retry_task(uuid)
-    return {"success": True}
+async def retry_task(uuid: UUIDModel) -> None:
+    return await root.retry_task(uuid)
