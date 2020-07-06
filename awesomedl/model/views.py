@@ -58,3 +58,13 @@ class StdoutModel(BaseModel):
     def create(uuid: str, stdout: str):
         d = {"uuid": uuid, "stdout": stdout}
         return StdoutModel(**d)
+
+
+class Result(BaseModel):
+    ok: bool
+    output: Optional[str]
+
+    @staticmethod
+    def create(ok: bool, output: Optional[str] = None):
+        return Result(ok=ok, output=output)
+

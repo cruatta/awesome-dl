@@ -76,24 +76,24 @@ async def get_running_tasks() -> List[TaskProgressModel]:
 
 
 @app.post("/task/cleanup", dependencies=[Depends(check_authorization_header)])
-async def cleanup_tasks() -> str:
+async def cleanup_tasks() -> Result:
     await root.cleanup()
-    return "OK"
+    return Result.create(ok=True)
 
 
 @app.post("/task/cancel", dependencies=[Depends(check_authorization_header)])
-async def cancel_task(uuid: UUIDModel) -> str:
-    await root.cancel(uuid)
-    return "OK"
+async def cancel_task(uuid: UUIDModel) -> Result:
+    result = await root.cancel(uuid)
+    return Result.create(ok=result)
 
 
 @app.post("/task/retry/processed", dependencies=[Depends(check_authorization_header)])
-async def retry_processed_tasks() -> str:
+async def retry_processed_tasks() -> Result:
     await root.retry_processed_tasks()
-    return "OK"
+    return Result.create(ok=True)
 
 
 @app.post("/task/retry", dependencies=[Depends(check_authorization_header)])
-async def retry_task(uuid: UUIDModel) -> str:
+async def retry_task(uuid: UUIDModel) -> Result:
     await root.retry_task(uuid)
-    return "OK"
+    return Result.create(ok=True)
