@@ -1,5 +1,10 @@
+try:
+    from importlib.metadata import version # type: ignore
+except ImportError:
+    from importlib_metadata import version # type: ignore
+
 # App Version
-VERSION = "0.4.0"
+VERSION = version("awesome-dl")
 
 # ENVs
 ADL_KEY = "ADL_KEY"

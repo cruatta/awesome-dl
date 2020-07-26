@@ -19,3 +19,8 @@ def test_get_ytdl_formats():
 def test_get_running():
     r = requests.get("http://localhost:8080/task/running", headers={"X-ADL-Key": "test"})
     assert r.ok is True
+
+def test_get_version():
+    r = requests.get("http://localhost:8080/version", headers={"X-ADL-Key": "test"})
+    assert r.ok is True
+    assert r.json()["version"] is not ""
