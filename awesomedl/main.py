@@ -19,9 +19,12 @@ from fastapi.security import APIKeyHeader
 X_ADL_KEY = APIKeyHeader(name=API_KEY_HEADER)
 adl_key_hashed = os.environ.get(ADL_KEY)
 
-ytdl_config_path: str = os.environ.get(YTDL_CONFIG_PATH) or str(Path(Path.home(), ".config", "awesome", "ytdl"))
+config = ConfigManager.config_path()
 
-config_manager = ConfigManager(Path(ytdl_config_path))
+if config is None:
+    logger.warning("Starting up without configuration")
+
+config_manager = ConfigManager(config)
 task_processor = TaskProcessor(config_manager)
 db = SQLiteDatasource('sqlite:///awesome.db')
 app = FastAPI(title="awesome-dl",
