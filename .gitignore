@@ -8,3 +8,4 @@ awesome_dl.egg-info
 *.db
 *.db-journal
 .coverage
+.vscode/
