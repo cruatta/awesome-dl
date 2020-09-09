@@ -102,6 +102,6 @@ async def retry_task(uuid: UUIDModel) -> Result:
     return Result.create(ok=True)
 
 
-@app.get("/version", dependencies=[Depends(check_authorization_header)])
+@app.get("/version", response_model=Dict[str,str], dependencies=[Depends(check_authorization_header)])
 def get_version() -> Dict[str, str]:
     return {"version": VERSION}
