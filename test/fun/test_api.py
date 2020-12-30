@@ -38,6 +38,26 @@ def test_get_running():
     assert r.ok is True
 
 
+def test_get_profiles():
+    r = requests.get("http://localhost:8080/ytdl/profiles", headers={"X-ADL-Key": "test"})
+    assert r.ok is True
+
+
+def test_get_progress():
+    r = requests.get("http://localhost:8080/task/progress/1234", headers={"X-ADL-Key": "test"})
+    assert r.ok is True
+
+
+def test_cleanup():
+    r = requests.post("http://localhost:8080/task/cleanup", headers={"X-ADL-Key": "test"})
+    assert r.ok is True
+
+
+def test_cancel():
+    r = requests.post("http://localhost:8080/task/cancel", json={"uuid": "A"}, headers={"X-ADL-Key": "test"})
+    assert r.ok is True
+
+
 def test_get_health():
     r = requests.get("http://localhost:8080/health", headers={"X-ADL-Key": "test"})
     assert r.ok is True
