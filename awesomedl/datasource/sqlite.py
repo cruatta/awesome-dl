@@ -1,6 +1,4 @@
-from awesomedl.model.views import SubmittedTaskModel
-from awesomedl.model.task import DownloadTask, YTDLDownloadTask
-from awesomedl.model import TaskStatus, TaskType
+from awesomedl.model.__init__ import SubmittedTaskModel, DownloadTask, YTDLDownloadTask, TaskStatus, TaskType
 from databases import Database
 
 from typing import *
@@ -71,11 +69,11 @@ class SQLiteDatasource(object):
     async def get(self) -> Optional[DownloadTask]:
         select_query = """
         SELECT * FROM Tasks WHERE status = {} ORDER BY id ASC LIMIT 1 
-        """.format(TaskStatus.CREATED)
+        """.format(TaskStatus.Created)
 
         update_query = """
         UPDATE Tasks SET status = {} WHERE id = :id
-        """.format(TaskStatus.PROCESSING)
+        """.format(TaskStatus.Processing)
 
         async with self.database.transaction():
             row = await self.database.fetch_one(select_query, None)
@@ -86,7 +84,7 @@ class SQLiteDatasource(object):
                 await self.database.execute(update_query, param)
                 task = self._row_to_download_task(row)
                 if task is not None:
-                    task.submitted_task.status = TaskStatus.PROCESSING
+                    task.submitted_task.status = TaskStatus.Processing
                 return task
             else:
                 return None
@@ -94,14 +92,14 @@ class SQLiteDatasource(object):
     async def retry_processed(self):
         update_query = """
         UPDATE Tasks SET status = {} WHERE status = {}
-        """.format(TaskStatus.CREATED, TaskStatus.PROCESSING)
+        """.format(TaskStatus.Created, TaskStatus.Processing)
 
         await self.database.execute(update_query, None)
 
     async def retry(self, _uuid: str):
         update_query = """
         UPDATE Tasks SET status = {} WHERE uuid = :uuid
-        """.format(TaskStatus.CREATED)
+        """.format(TaskStatus.Created)
 
         params = {
             "uuid": _uuid
@@ -112,7 +110,7 @@ class SQLiteDatasource(object):
     async def cleanup(self):
         delete_query = """
         DELETE FROM Tasks WHERE status IN ({}, {}, {})
-        """.format(TaskStatus.DONE, TaskStatus.CANCELLED, TaskStatus.FAILED)
+        """.format(TaskStatus.Done, TaskStatus.Cancelled, TaskStatus.Failed)
 
         await self.database.execute(delete_query, None)
 
@@ -130,7 +128,7 @@ class SQLiteDatasource(object):
     async def cancel(self, uuid: str):
         update_query = """
         UPDATE Tasks SET status = {} WHERE uuid = :uuid
-        """.format(TaskStatus.CANCELLED)
+        """.format(TaskStatus.Cancelled)
 
         params = {
             "uuid": uuid
@@ -159,9 +157,9 @@ class SQLiteDatasource(object):
         return await self._list_by(query)
 
     async def list_running(self) -> List[DownloadTask]:
-        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.PROCESSING)
+        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.Processing)
         return await self._list_by(query)
 
     async def list_queued(self) -> List[DownloadTask]:
-        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.CREATED)
+        query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.Created)
         return await self._list_by(query)

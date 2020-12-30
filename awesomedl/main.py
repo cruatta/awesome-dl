@@ -1,13 +1,11 @@
 import os
-from pathlib import Path
 from typing import *
 
 from awesomedl.backend.root import RootBackend
 from awesomedl.backend.ytdl import YTDLBackend
 from awesomedl.config import ConfigManager
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model import TaskType
-from awesomedl.model.views import *
+from awesomedl.model import *
 from awesomedl.queue import TaskQueue
 from awesomedl.process.task_processor import TaskProcessor
 from awesomedl.util import make_check_authorization_header
@@ -27,13 +25,12 @@ if config is None:
 config_manager = ConfigManager(config)
 task_processor = TaskProcessor(config_manager)
 db = SQLiteDatasource('sqlite:///awesome.db')
-app = FastAPI(title="awesome-dl",
-              description="A download manager for Youtube-DL and beyond",
+app = FastAPI(title="Awesome-dl",
+              description="An awesome download manager",
               version=VERSION)
 task_queue = TaskQueue(db, task_processor)
 ytdl = YTDLBackend(task_queue)
 root = RootBackend(task_queue)
-
 
 if not adl_key_hashed:
     logger.warning("Missing {} environment variable. API key protection is disabled".format(ADL_KEY))
@@ -58,50 +55,50 @@ async def add_task(task: DownloadRequestModel) -> SubmittedTaskModel:
     return await ytdl.add(task)
 
 
-@app.get("/ytdl/formats", response_model=List[str], dependencies=[Depends(check_authorization_header)])
-def get_ytdl_formats() -> List[str]:
+@app.get("/ytdl/profiles", response_model=List[str], dependencies=[Depends(check_authorization_header)])
+def get_ytdl_profiles() -> List[str]:
     return config_manager.list(TaskType.YTDL)
 
 
-@app.get("/task/queue", response_model=List[SubmittedTaskModel], dependencies=[Depends(check_authorization_header)])
-async def get_queued_tasks() -> List[SubmittedTaskModel]:
-    return await root.queued()
+@app.get("/task/all", response_model=List[SubmittedTaskModel], dependencies=[Depends(check_authorization_header)])
+async def get_tasks() -> List[SubmittedTaskModel]:
+    return await root.all()
 
 
-@app.get("/task/stdout/{uuid}", response_model=List[StdoutModel], dependencies=[Depends(check_authorization_header)])
-async def get_stdout(uuid: str) -> List[StdoutModel]:
-    return await root.stdout(UUIDModel(uuid=uuid))
-
-
-@app.get("/task/running", response_model=List[TaskProgressModel], dependencies=[Depends(check_authorization_header)])
-async def get_running_tasks() -> List[TaskProgressModel]:
+@app.get("/task/running", response_model=List[SubmittedTaskModel], dependencies=[Depends(check_authorization_header)])
+async def get_task_running() -> List[SubmittedTaskModel]:
     return await root.running()
 
 
-@app.post("/task/cleanup", response_model=Result, dependencies=[Depends(check_authorization_header)])
-async def cleanup_tasks() -> Result:
+@app.get("/task/progress/{uuid}", response_model=List[TaskProgressModel], dependencies=[Depends(check_authorization_header)])
+async def get_task_progress(uuid: str) -> List[TaskProgressModel]:
+    return await root.progress(UUIDModel(uuid=uuid))
+
+
+@app.post("/task/cleanup", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
+async def cleanup_tasks() -> ResultModel:
     await root.cleanup()
-    return Result.create(ok=True)
+    return ResultModel.create(ok=True)
 
 
-@app.post("/task/cancel", response_model=Result, dependencies=[Depends(check_authorization_header)])
-async def cancel_task(uuid: UUIDModel) -> Result:
+@app.post("/task/cancel", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
+async def cancel_task(uuid: UUIDModel) -> ResultModel:
     result = await root.cancel(uuid)
-    return Result.create(ok=result)
+    return ResultModel.create(ok=result)
 
 
-@app.post("/task/retry/processed", response_model=Result, dependencies=[Depends(check_authorization_header)])
-async def retry_processed_tasks() -> Result:
+@app.post("/task/retry/processed", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
+async def retry_processed_tasks() -> ResultModel:
     await root.retry_processed_tasks()
-    return Result.create(ok=True)
+    return ResultModel.create(ok=True)
 
 
-@app.post("/task/retry", response_model=Result, dependencies=[Depends(check_authorization_header)])
-async def retry_task(uuid: UUIDModel) -> Result:
+@app.post("/task/retry", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
+async def retry_task(uuid: UUIDModel) -> ResultModel:
     await root.retry_task(uuid)
-    return Result.create(ok=True)
+    return ResultModel.create(ok=True)
 
 
-@app.get("/version", response_model=Dict[str,str], dependencies=[Depends(check_authorization_header)])
-def get_version() -> Dict[str, str]:
-    return {"version": VERSION}
+@app.get("/health", response_model=HealthModel, dependencies=[Depends(check_authorization_header)])
+def get_health() -> HealthModel:
+    return HealthModel.create('Awesome-dl', VERSION)

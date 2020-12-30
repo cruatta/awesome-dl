@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "awesome-dl"
-version = "0.5.2"
-description = ""
+version = "0.6.0"
+description = "An awesome download manager"
 authors = ["Cameron Ruatta <c@ruatta.com>"]
 license = "MIT"
 
@@ -12,7 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 fastapi = "^0.54.1"
-youtube-dl = "^2020.12.12"
+youtube-dl = "^2020.12.29"
 uvicorn = "^0.11.5"
 databases = {extras = ["sqlite"], version = "^0.3.2"}
 

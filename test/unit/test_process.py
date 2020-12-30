@@ -1,8 +1,7 @@
 from awesomedl.process.output import ytdl_output_progress_parser
 from awesomedl.process.task_processor import TaskProcessor, TaskProcessorException
 from awesomedl.config import ConfigManager
-from awesomedl.model.task import YTDLDownloadTask, SubmittedTaskModel
-from awesomedl.model import TaskStatus
+from awesomedl.model import TaskStatus, YTDLDownloadTask, SubmittedTaskModel
 import tempfile
 from pathlib import Path
 
@@ -13,7 +12,7 @@ def test_ytdl_args():
         task_processor = TaskProcessor(c)
         url = "https://youtube-dl"
         task = YTDLDownloadTask(SubmittedTaskModel.create("https://youtube-dl", "uuid", "2019-01-01 09:19:20",
-                                                          TaskStatus.PROCESSING, None))
+                                                          TaskStatus.Processing, None))
         args = task_processor.ytdl_args(task)
         assert args is not None
         assert args == ["-m", "youtube_dl", url, "--newline"]
@@ -24,7 +23,7 @@ def test_ytdl_args_wrong_status():
         c = ConfigManager(ytdl_root=Path(tmp))
         task_processor = TaskProcessor(c)
         task = YTDLDownloadTask(SubmittedTaskModel.create("https://youtube-dl", "uuid", "2019-01-01 09:19:20",
-                                                          TaskStatus.DONE, None))
+                                                          TaskStatus.Done, None))
         args = task_processor.ytdl_args(task)
         assert isinstance(args, TaskProcessorException)
 
@@ -37,7 +36,7 @@ def test_ytdl_args_with_config():
             c = ConfigManager(ytdl_root=Path(tmp_dir))
             task_processor = TaskProcessor(c)
             task = YTDLDownloadTask(SubmittedTaskModel.create(url, "uuid", "2019-01-01 09:19:20",
-                                                              TaskStatus.PROCESSING, path.name))
+                                                              TaskStatus.Processing, path.name))
             args = task_processor.ytdl_args(task)
             assert args == ["-m", "youtube_dl", url, "--newline", "--ignore-config", "--config-location",
                             str(path.resolve())]
@@ -55,7 +54,7 @@ def test_ytdl_args_with_missing_config():
             c = ConfigManager(ytdl_root=Path(tmp_dir))
             task_processor = TaskProcessor(c)
             task = YTDLDownloadTask(SubmittedTaskModel.create(url, "uuid", "2019-01-01 09:19:20",
-                                                              TaskStatus.PROCESSING, profile))
+                                                              TaskStatus.Processing, profile))
             args = task_processor.ytdl_args(task)
             assert isinstance(args, TaskProcessorException)
 
