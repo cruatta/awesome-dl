@@ -14,21 +14,19 @@ class ConfigFile(BaseModel):
 
 class ConfigManager(object):
     def __init__(self, ytdl_root: Optional[Path]):
-        def load_config(self):
+        def load_config():
             if ytdl_root is not None:
                 return {item.stem: ConfigFile(name=item.stem, path=item)
-                    for item in ytdl_root.resolve().iterdir()
-                    if item.is_file()}
+                        for item in ytdl_root.resolve().iterdir()
+                        if item.is_file()}
             else:
                 return {}
 
-        self.ytdl_configs: Dict[str, ConfigFile] = load_config(self)
-
+        self.ytdl_configs: Dict[str, ConfigFile] = load_config()
 
     @staticmethod
     def default_config_path() -> Path:
         return Path(Path.home(), ".config", "awesome", "ytdl")
-
 
     @staticmethod
     def config_path() -> Optional[Path]:

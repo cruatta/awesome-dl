@@ -1,11 +1,9 @@
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model import TaskType, TaskStatus
+from awesomedl.model import YTDLDownloadTask, SubmittedTaskModel, TaskType, TaskStatus
 import pytest  # type: ignore
 import aiofiles.os  # type: ignore
 import uuid
 import sqlite3
-from awesomedl.model.task import YTDLDownloadTask
-from awesomedl.model.views import SubmittedTaskModel
 
 
 class TempDatabase:
@@ -58,7 +56,7 @@ async def test_put_get():
             assert res.type == TaskType.YTDL
             assert res.submitted_task.uuid == str(i)
             assert res.submitted_task.profile == "audio"
-            assert res.submitted_task.status == TaskStatus.PROCESSING
+            assert res.submitted_task.status == TaskStatus.Processing
             assert res.submitted_task.submitted_ts == "whatever"
             assert res.submitted_task.url == "whatever"
 
@@ -75,11 +73,11 @@ async def test_get_one_is_none():
 @pytest.mark.asyncio
 async def test_list_all():
     async with TempDatabase() as db:
-        t1 = make_task(uuid="1", status=TaskStatus.CANCELLED)
-        t2 = make_task(uuid="2", status=TaskStatus.PROCESSING)
-        t3 = make_task(uuid="3", status=TaskStatus.FAILED)
-        t4 = make_task(uuid="4", status=TaskStatus.CREATED)
-        t5 = make_task(uuid="5", status=TaskStatus.DONE)
+        t1 = make_task(uuid="1", status=TaskStatus.Cancelled)
+        t2 = make_task(uuid="2", status=TaskStatus.Processing)
+        t3 = make_task(uuid="3", status=TaskStatus.Failed)
+        t4 = make_task(uuid="4", status=TaskStatus.Created)
+        t5 = make_task(uuid="5", status=TaskStatus.Done)
         await db.put(t1)
         await db.put(t2)
         await db.put(t3)
@@ -99,9 +97,9 @@ async def test_list_running():
     async with TempDatabase() as db:
         await db.put(make_task(uuid="1"))
         await db.put(make_task(uuid="2"))
-        await db.put(make_task(uuid="3", status=TaskStatus.PROCESSING))
+        await db.put(make_task(uuid="3", status=TaskStatus.Processing))
         res = await db.list_running()
-        assert make_task(uuid="3", status=TaskStatus.PROCESSING) in res
+        assert make_task(uuid="3", status=TaskStatus.Processing) in res
 
 
 @pytest.mark.asyncio
@@ -109,7 +107,7 @@ async def test_list_queued():
     async with TempDatabase() as db:
         await db.put(make_task(uuid="1"))
         await db.put(make_task(uuid="2"))
-        await db.put(make_task(uuid="3", status=TaskStatus.PROCESSING))
+        await db.put(make_task(uuid="3", status=TaskStatus.Processing))
         res = await db.list_queued()
         assert make_task(uuid="1") in res
         assert make_task(uuid="2") in res
@@ -120,13 +118,13 @@ async def test_cancel():
     async with TempDatabase() as db:
         await db.put(make_task(uuid="1"))
         await db.put(make_task(uuid="2"))
-        await db.put(make_task(uuid="3", status=TaskStatus.PROCESSING))
+        await db.put(make_task(uuid="3", status=TaskStatus.Processing))
         await db.cancel("1")
         await db.cancel("3")
         res = await db.list_all()
-        assert make_task(uuid="1", status=TaskStatus.CANCELLED) in res
-        assert make_task(uuid="3", status=TaskStatus.CANCELLED) in res
-        assert make_task(uuid="2", status=TaskStatus.CREATED) in res
+        assert make_task(uuid="1", status=TaskStatus.Cancelled) in res
+        assert make_task(uuid="3", status=TaskStatus.Cancelled) in res
+        assert make_task(uuid="2", status=TaskStatus.Created) in res
 
 
 @pytest.mark.asyncio
@@ -142,55 +140,55 @@ async def test_get_by_uuid():
 @pytest.mark.asyncio
 async def test_set_status():
     async with TempDatabase() as db:
-        await db.put(make_task(uuid="1", status=TaskStatus.DONE))
+        await db.put(make_task(uuid="1", status=TaskStatus.Done))
         init = await db.get_by_uuid("1")
-        assert init.submitted_task.status == TaskStatus.DONE
-        await db.set_status("1", TaskStatus.PROCESSING)
+        assert init.submitted_task.status == TaskStatus.Done
+        await db.set_status("1", TaskStatus.Processing)
         res = await db.get_by_uuid("1")
         assert res.submitted_task.uuid == "1"
-        assert res.submitted_task.status == TaskStatus.PROCESSING
+        assert res.submitted_task.status == TaskStatus.Processing
 
 
 @pytest.mark.asyncio
 async def test_retry():
     async with TempDatabase() as db:
-        await db.put(make_task(uuid="1", status=TaskStatus.CANCELLED))
+        await db.put(make_task(uuid="1", status=TaskStatus.Cancelled))
         init = await db.get_by_uuid("1")
-        assert init.submitted_task.status == TaskStatus.CANCELLED
+        assert init.submitted_task.status == TaskStatus.Cancelled
         await db.retry("1")
         res = await db.get_by_uuid("1")
         assert res.submitted_task.uuid == "1"
-        assert res.submitted_task.status == TaskStatus.CREATED
+        assert res.submitted_task.status == TaskStatus.Created
 
 
 @pytest.mark.asyncio
 async def test_retry_processed():
     async with TempDatabase() as db:
-        await db.put(make_task(uuid="1", status=TaskStatus.PROCESSING))
-        await db.put(make_task(uuid="2", status=TaskStatus.DONE))
+        await db.put(make_task(uuid="1", status=TaskStatus.Processing))
+        await db.put(make_task(uuid="2", status=TaskStatus.Done))
 
         one = await db.get_by_uuid("1")
         two = await db.get_by_uuid("2")
-        assert one.submitted_task.status == TaskStatus.PROCESSING
-        assert two.submitted_task.status == TaskStatus.DONE
+        assert one.submitted_task.status == TaskStatus.Processing
+        assert two.submitted_task.status == TaskStatus.Done
 
         await db.retry_processed()
 
         one = await db.get_by_uuid("1")
         two = await db.get_by_uuid("2")
         assert one.submitted_task.uuid == "1"
-        assert one.submitted_task.status == TaskStatus.CREATED
+        assert one.submitted_task.status == TaskStatus.Created
         assert two.submitted_task.uuid == "2"
-        assert two.submitted_task.status == TaskStatus.DONE
+        assert two.submitted_task.status == TaskStatus.Done
 
 @pytest.mark.asyncio
 async def test_cleanup():
     async with TempDatabase() as db:
-        t1 = make_task(uuid="1", status=TaskStatus.CANCELLED)
-        t2 = make_task(uuid="2", status=TaskStatus.PROCESSING)
-        t3 = make_task(uuid="3", status=TaskStatus.FAILED)
-        t4 = make_task(uuid="4", status=TaskStatus.CREATED)
-        t5 = make_task(uuid="5", status=TaskStatus.DONE)
+        t1 = make_task(uuid="1", status=TaskStatus.Cancelled)
+        t2 = make_task(uuid="2", status=TaskStatus.Processing)
+        t3 = make_task(uuid="3", status=TaskStatus.Failed)
+        t4 = make_task(uuid="4", status=TaskStatus.Created)
+        t5 = make_task(uuid="5", status=TaskStatus.Done)
         tasks = [t1, t2, t3, t4, t5]
         for t in tasks:
             await db.put(t)

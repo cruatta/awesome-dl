@@ -1,7 +1,7 @@
 try:
-    from importlib.metadata import version # type: ignore
+    from importlib.metadata import version  # type: ignore
 except ImportError:
-    from importlib_metadata import version # type: ignore
+    from importlib_metadata import version  # type: ignore
 
 # App Version
 VERSION = version("awesome-dl")

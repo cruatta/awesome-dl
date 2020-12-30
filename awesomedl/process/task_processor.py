@@ -3,8 +3,7 @@ from typing import *
 import sys
 
 from awesomedl.config import ConfigManager, ConfigFile
-from awesomedl.model import TaskStatus, TaskType
-from awesomedl.model.task import DownloadTask, YTDLDownloadTask
+from awesomedl.model import TaskStatus, DownloadTask, YTDLDownloadTask, TaskType
 
 
 class TaskProcessorException(Exception):
@@ -22,7 +21,7 @@ class TaskProcessor(object):
         profile = task.submitted_task.profile
         config_file: Optional[ConfigFile] = self.config_manager.config(task.type, profile)
 
-        if status is not TaskStatus.PROCESSING:
+        if status is not TaskStatus.Processing:
             return TaskProcessorException("Task is in the wrong status: {}".format(status))
         if config_file is None and profile is not None:
             return TaskProcessorException("Missing profile: {}".format(profile))

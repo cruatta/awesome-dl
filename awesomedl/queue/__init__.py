@@ -3,12 +3,13 @@ from asyncio.subprocess import Process
 from asyncio.tasks import Task
 from random import random
 from typing import *
+
+from awesomedl.process.output import progress_output_parser, get_next_stdout
 from awesomedl.process.task_processor import TaskProcessorException
 
 from awesomedl.process.task_processor import TaskProcessor
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model.task import DownloadTask
-from awesomedl.model import TaskStatus
+from awesomedl.model import TaskStatus, DownloadTask, ProgressModel, TaskProgress
 from fastapi.logger import logger
 
 
@@ -30,6 +31,9 @@ class TaskQueue(object):
         for i in range(self._num_workers):
             worker = create_task(self._worker(i, self._init_wait, self.db))
             self._workers.append(worker)
+
+    def _running_tasks_with_process(self) -> Iterator[Tuple[DownloadTask, Process]]:
+        return iter([twp for twp in self._running_tasks.values() if not twp[1].returncode])
 
     async def wait_for_cancellations(self,
                                      max_wait_time: int,
@@ -57,10 +61,27 @@ class TaskQueue(object):
 
         return await self.wait_for_cancellations(100)
 
-    def view_running_tasks(self) -> Iterator[Tuple[DownloadTask, Process]]:
-        return iter([task for task in self._running_tasks.values() if not task[1].returncode])
+    def view_running_tasks(self) -> Iterator[DownloadTask]:
+        return iter([task[0] for task in self._running_tasks_with_process()])
 
-    async def view_task_queue(self) -> List[DownloadTask]:
+    async def view_task(self, _uuid: str) -> Optional[Tuple[DownloadTask, TaskProgress]]:
+        maybe_task: Optional[DownloadTask] = await self.db.get_by_uuid(_uuid)
+        if maybe_task and maybe_task.submitted_task.status == TaskStatus.Done:
+            return maybe_task, TaskProgress.complete()
+        elif maybe_task:
+            maybe_process = [task[1] for task in self._running_tasks.values() if task[0].submitted_task.uuid == _uuid]
+            if maybe_process:
+                maybe_progress: Optional[TaskProgress] = progress_output_parser(
+                    maybe_task, await get_next_stdout(maybe_process[0])
+                )
+            else:
+                maybe_progress = None
+            progress: TaskProgress = maybe_progress if maybe_progress else TaskProgress.na()
+            return maybe_task, progress
+        else:
+            return None
+
+    async def view_all(self) -> List[DownloadTask]:
         return await self.db.list_all()
 
     async def add(self, task: DownloadTask):
@@ -76,7 +97,7 @@ class TaskQueue(object):
         await self.db.retry_processed()
 
     async def cancel(self, _uuid: str) -> bool:
-        for running_task in self.view_running_tasks():
+        for running_task in self._running_tasks_with_process():
             if _uuid == running_task[0].submitted_task.uuid:
                 try:
                     running_task[1].terminate()
@@ -93,7 +114,7 @@ class TaskQueue(object):
     @staticmethod
     def calc_next_wait(wait: float) -> float:
         jitter = random()
-        return min(5, wait + jitter)
+        return min(5.0, wait + jitter)
 
     @staticmethod
     async def wait_for_process_status(_id: int, process: Union[TaskProcessorException, Process]) -> TaskStatus:
@@ -104,12 +125,12 @@ class TaskQueue(object):
             logger.info("Worker id: {} - Return code: {}".format(_id, return_code))
 
             if return_code == 0:
-                return TaskStatus.DONE
+                return TaskStatus.Done
             else:
-                return TaskStatus.FAILED
+                return TaskStatus.Failed
         else:
             logger.warn("Worker id: {} - Process failure: {}".format(_id, process.message))
-            return TaskStatus.FAILED
+            return TaskStatus.Failed
 
     async def _worker(self, _id: int, init_wait: float, db: SQLiteDatasource):
         wait_time = init_wait
