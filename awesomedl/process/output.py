@@ -29,7 +29,10 @@ async def stream_to_str(sr: Optional[StreamReader]) -> str:
 
 
 def progress_output_parser(c: DownloadTask, stdout: str) -> Optional[TaskProgress]:
-    return ytdl_output_progress_parser(stdout)
+    if isinstance(c, YTDLDownloadTask):
+        return ytdl_output_progress_parser(stdout)
+    else:
+        return None
 
 
 def ytdl_output_progress_parser(stdout: str) -> Optional[TaskProgress]:

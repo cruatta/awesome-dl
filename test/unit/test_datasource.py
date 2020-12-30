@@ -1,11 +1,9 @@
 from awesomedl.datasource.sqlite import SQLiteDatasource
-from awesomedl.model import TaskType, TaskStatus
+from awesomedl.model import YTDLDownloadTask, SubmittedTaskModel, TaskType, TaskStatus
 import pytest  # type: ignore
 import aiofiles.os  # type: ignore
 import uuid
 import sqlite3
-from awesomedl.model import YTDLDownloadTask
-from awesomedl.model.__init__ import SubmittedTaskModel
 
 
 class TempDatabase:

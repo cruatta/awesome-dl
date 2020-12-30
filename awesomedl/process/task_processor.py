@@ -33,8 +33,11 @@ class TaskProcessor(object):
             return args
 
     async def process(self, task: DownloadTask) -> Union[TaskProcessorException, Process]:
-        args = self.ytdl_args(task)
-        if isinstance(args, TaskProcessorException):
-            return args
+        if isinstance(task, YTDLDownloadTask):
+            args = self.ytdl_args(task)
+            if isinstance(args, TaskProcessorException):
+                return args
+            else:
+                return await create_subprocess_exec(sys.executable, *args, stdout=PIPE)
         else:
-            return await create_subprocess_exec(sys.executable, *args, stdout=PIPE)
+            return TaskProcessorException("Invalid task type")

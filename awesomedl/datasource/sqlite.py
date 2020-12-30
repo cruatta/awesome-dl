@@ -1,4 +1,4 @@
-from awesomedl.model.__init__ import SubmittedTaskModel, DownloadTask, YTDLDownloadTask, TaskStatus, TaskType
+from awesomedl.model import SubmittedTaskModel, DownloadTask, YTDLDownloadTask, TaskStatus, TaskType
 from databases import Database
 
 from typing import *
