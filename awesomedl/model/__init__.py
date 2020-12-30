@@ -77,6 +77,22 @@ class ResultModel(BaseModel):
         return ResultModel(ok=ok, output=output)
 
 
+class CancelModel(BaseModel):
+    uuid: str
+    success: bool
+
+    @staticmethod
+    def create(uuid: str, success: bool):
+        return CancelModel(uuid=uuid, success=success)
+
+    @staticmethod
+    def create_many(values: Dict[str, bool]):
+        result: List[CancelModel] = list()
+        for key, value in values.items():
+            result = result + [CancelModel.create(key, value)]
+        return result
+
+
 class HealthModel(BaseModel):
     name: str
     version: str

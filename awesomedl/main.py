@@ -77,26 +77,27 @@ async def get_task_progress(uuid: str) -> List[TaskProgressModel]:
 
 @app.post("/task/cleanup", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
 async def cleanup_tasks() -> ResultModel:
-    await root.cleanup()
-    return ResultModel.create(ok=True)
+    return await root.cleanup()
 
 
-@app.post("/task/cancel", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
-async def cancel_task(uuid: UUIDModel) -> ResultModel:
-    result = await root.cancel(uuid)
-    return ResultModel.create(ok=result)
+@app.post("/task/cancel", response_model=List[CancelModel], dependencies=[Depends(check_authorization_header)])
+async def cancel_task(uuid: UUIDModel) -> List[CancelModel]:
+    return await root.cancel(uuid)
+
+
+@app.post("/task/cancel/all", response_model=List[CancelModel], dependencies=[Depends(check_authorization_header)])
+async def cancel_all_tasks() -> List[CancelModel]:
+    return await root.cancel_all()
 
 
 @app.post("/task/retry/processed", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
 async def retry_processed_tasks() -> ResultModel:
-    await root.retry_processed_tasks()
-    return ResultModel.create(ok=True)
+    return await root.retry_processed_tasks()
 
 
 @app.post("/task/retry", response_model=ResultModel, dependencies=[Depends(check_authorization_header)])
 async def retry_task(uuid: UUIDModel) -> ResultModel:
-    await root.retry_task(uuid)
-    return ResultModel.create(ok=True)
+    return await root.retry_task(uuid)
 
 
 @app.get("/health", response_model=HealthModel, dependencies=[Depends(check_authorization_header)])
