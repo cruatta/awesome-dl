@@ -1,6 +1,21 @@
 import requests
 
 
+def test_e2e():
+    r = requests.post("http://localhost:8080/ytdl/task", json={"url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ"})
+    assert r.ok is True
+    uuid = r.json()["uuid"]
+    r = requests.get("http://localhost:8080/task/progress/{}".format(uuid))
+    assert r.ok is True
+    assert len(r.json()) == 1
+    r = requests.post("http://localhost:8080/task/cancel", json={"uuid": uuid})
+    assert r.ok is True
+    r = requests.get("http://localhost:8080/task/all")
+    assert r.ok is True
+    assert len(r.json()) == 1
+    assert r.json()[0]["task"]["status"] == 2
+
+
 def test_no_api_key():
     r = requests.get("http://localhost:8080/task/all", headers={"X-Whatever": "test"})
     assert r.ok is False
