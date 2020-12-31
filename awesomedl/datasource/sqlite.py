@@ -156,6 +156,10 @@ class SQLiteDatasource(object):
         query = "SELECT * FROM Tasks"
         return await self._list_by(query)
 
+    async def list_running_or_queued(self) -> List[DownloadTask]:
+        query = "SELECT * FROM Tasks WHERE status IN ({}, {})".format(TaskStatus.Processing, TaskStatus.Created)
+        return await self._list_by(query)
+
     async def list_running(self) -> List[DownloadTask]:
         query = "SELECT * FROM Tasks WHERE status = {}".format(TaskStatus.Processing)
         return await self._list_by(query)
