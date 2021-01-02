@@ -27,7 +27,6 @@ class TaskQueue(object):
         self._workers: List[Task] = list()
         self._running_tasks: Dict[int, Tuple[DownloadTask, Process]] = dict()
         self._init_wait: float = 0
-        self._shutdown_wait_time: float = 5
 
         for i in range(self._num_workers):
             worker = create_task(self._worker(i, self._init_wait, self.db))
