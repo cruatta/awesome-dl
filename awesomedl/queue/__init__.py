@@ -1,4 +1,4 @@
-from asyncio import Lock, create_task, sleep
+from asyncio import Lock, create_task, sleep, CancelledError, InvalidStateError
 from asyncio.subprocess import Process
 from asyncio.tasks import Task
 from random import random
@@ -55,8 +55,7 @@ class TaskQueue(object):
         else:
             return process_list[0] if len_process_list == 1 else None
 
-    async def wait_for_cancellations(self,
-                                     max_wait_time: int,
+    async def wait_for_cancellations(self, max_wait_time: int,
                                      wait_time: int = 0) -> Optional[ShutdownMaxWaitTimeException]:
         total = len(self._workers)
         waiting = len([worker for worker in self._workers if worker.cancelled() is False])
@@ -73,13 +72,22 @@ class TaskQueue(object):
             return await self.wait_for_cancellations(max_wait_time, wait_time + 1)
 
     async def kill_workers(self) -> Optional[ShutdownMaxWaitTimeException]:
-        for _id, worker in enumerate(self._workers):
-            task: Optional[Tuple[DownloadTask, Process]] = self._running_tasks.get(_id)
-            if task is not None:
-                task[1].kill()
-            worker.cancel()
+        logger.warn("Starting worker shutdown")
+        async with self._lock:
+            for _id, worker in enumerate(self._workers):
+                task: Optional[Tuple[DownloadTask, Process]] = self._running_tasks.get(_id)
+                if task is not None:
+                    task[1].kill()
+                worker.cancel()
+                try:
+                    if worker.exception():
+                        logger.warn("Worker shutting down {} caught exception={}".format(_id, str(worker.exception())))
+                except CancelledError:
+                    pass
+                except InvalidStateError:
+                    pass
 
-        return await self.wait_for_cancellations(100)
+        return await self.wait_for_cancellations(10)
 
     def view_running_tasks(self) -> Iterator[DownloadTask]:
         return iter([task[0] for task in self._running_tasks_with_process()])
