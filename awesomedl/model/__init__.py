@@ -31,14 +31,14 @@ class SubmittedTaskModel(BaseModel):
 
 
 class ProgressModel(BaseModel):
-    status: str
+    status: int
     percent_complete: str
     total_size: str
     speed: str
     eta: str
 
     @staticmethod
-    def create(status: str, percent_complete: str, total_size: str, speed: str, eta: str):
+    def create(status: int, percent_complete: str, total_size: str, speed: str, eta: str):
         d = {"status": status, "percent_complete": percent_complete, "total_size": total_size, "speed": speed,
              "eta": eta}
         return ProgressModel(**d)
@@ -122,7 +122,7 @@ class TaskProgress(object):
 
     @staticmethod
     def complete():
-        return TaskProgress("100%", "N/A", "N/A", "N/A")
+        return TaskProgress("100", "N/A", "N/A", "N/A")
 
 
 @dataclass()

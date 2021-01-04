@@ -70,8 +70,8 @@ async def get_task_running() -> List[SubmittedTaskModel]:
     return await root.running()
 
 
-@app.get("/task/progress/{uuid}", response_model=List[TaskProgressModel], dependencies=[Depends(check_authorization_header)])
-async def get_task_progress(uuid: str) -> List[TaskProgressModel]:
+@app.get("/task/progress/{uuid}", response_model=List[ProgressModel], dependencies=[Depends(check_authorization_header)])
+async def get_task_progress(uuid: str) -> List[ProgressModel]:
     return await root.progress(UUIDModel(uuid=uuid))
 
 
