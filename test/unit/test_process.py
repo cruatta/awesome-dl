@@ -65,7 +65,7 @@ def test_ytdl_output_progress_parser():
     if model:
         assert model.speed == "312.43KiB/s"
         assert model.total_size == "426.81MiB"
-        assert model.percent_complete == "0.7%"
+        assert model.percent_complete == "0.7"
         assert model.eta == "23:09"
     else:
         assert False

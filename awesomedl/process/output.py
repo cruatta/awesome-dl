@@ -39,7 +39,7 @@ def ytdl_output_progress_parser(stdout: str) -> Optional[TaskProgress]:
     stdout_fixed = stdout.strip().strip("\\n")
     _match = re.match(ytdl_download_pattern, stdout_fixed)
     if _match:
-        percent_complete = _match.group(1)
+        percent_complete = _match.group(1).strip("%")
         total_size = _match.group(2)
         speed = _match.group(3)
         eta = _match.group(4)

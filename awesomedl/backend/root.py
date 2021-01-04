@@ -37,13 +37,13 @@ class RootBackend(object):
     async def running(self) -> List[SubmittedTaskModel]:
         return [running_task.submitted_task for running_task in self.task_queue.view_running_tasks()]
 
-    async def progress(self, _uuid: UUIDModel) -> List[TaskProgressModel]:
+    async def progress(self, _uuid: UUIDModel) -> List[ProgressModel]:
         maybe_result = await self.task_queue.view_task(_uuid.uuid)
         if maybe_result:
             submitted = maybe_result[0].submitted_task
             task_progress = maybe_result[1]
-            progress_model = ProgressModel.create(submitted.status.name, task_progress.percent_complete,
+            progress_model = ProgressModel.create(submitted.status, task_progress.percent_complete,
                                                   task_progress.total_size, task_progress.speed, task_progress.eta)
-            return [TaskProgressModel.create(submitted, progress_model)]
+            return [progress_model]
         else:
             return list()
