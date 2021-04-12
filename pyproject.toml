@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "awesome-dl"
-version = "0.8.0"
+version = "0.9.0"
 description = "An awesome download manager"
 authors = ["Cameron Ruatta <c@ruatta.com>"]
 license = "MIT"
@@ -12,7 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 fastapi = "^0.63.0"
-youtube-dl = "^2020.12.29"
+youtube-dl = "^2021.04.07"
 uvicorn = "^0.13.3"
 databases = {extras = ["sqlite"], version = "^0.4.1"}
 
@@ -24,7 +24,7 @@ mypy = "^0.770"
 pytest-flake8 = "^1.0.6"
 pytest-mock = "^3.1.0"
 pytest-cov = "^2.9.0"
-aiofiles = "^0.5.0"
+aiofiles = "^0.6.0"
 requests = "^2.23.0"
 python-language-server = "^0.34.1"
 pylint = "^2.5.3"

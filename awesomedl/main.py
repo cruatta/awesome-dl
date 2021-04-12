@@ -13,6 +13,8 @@ from awesomedl.vars import *
 from fastapi import Depends, FastAPI
 from fastapi.logger import logger
 from fastapi.security import APIKeyHeader
+from fastapi.staticfiles import StaticFiles
+
 
 X_ADL_KEY = APIKeyHeader(name=API_KEY_HEADER)
 adl_key_hashed = os.environ.get(ADL_KEY)
@@ -48,6 +50,9 @@ async def startup():
 async def shutdown():
     await task_queue.kill_workers()
     await db.disconnect()
+
+
+app.mount("/ui", StaticFiles(directory="frontend/build", html=True), name="ui")
 
 
 @app.post("/ytdl/task", response_model=SubmittedTaskModel, dependencies=[Depends(check_authorization_header)])
