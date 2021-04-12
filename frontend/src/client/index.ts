@@ -1,5 +1,5 @@
 import Axios, {AxiosInstance, AxiosResponse} from 'axios';
-import {Config} from '../Config';
+import {Config} from '../config';
 import {
   DownloadRequestModel,
   ProgressModel,
