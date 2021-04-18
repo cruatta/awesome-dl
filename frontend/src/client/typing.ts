@@ -7,18 +7,22 @@ export type SubmittedTaskModel = {
   uuid: string;
   url: string;
   submitted_ts: string;
-  status: number;
+  status: TaskStatus;
   profile?: string;
 };
 
-// eslint-disable-next-line no-shadow
+export type ResultModel = {
+  ok: boolean;
+  output: string;
+}
+
 export enum TaskStatus {
   Created = 0,
   Processing = 1,
   Cancelled = 2,
   Done = 3,
   Failed = 4,
-};
+}
 
 export type ProgressModel = {
   status: number;

@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import './styles.scss';
 import {useState} from 'react';
-import {getConfig, setConfig} from '../Config';
+import {getConfig, setConfig} from '../config';
 import 'react-tabs/style/react-tabs.css';
+import {Button, TextField} from "@material-ui/core";
 
 export const Settings: React.FC = () => {
-  const [baseURL, setBaseURL] = useState('');
+  const [baseURL, setBaseURL] = useState(window.location.href);
   const [apiKey, setApiKey] = useState('');
 
   React.useEffect(() => {
@@ -31,9 +31,10 @@ export const Settings: React.FC = () => {
         <p>
           <label htmlFor="baseURL">Server URL</label>
           <br />
-          <input
+          <TextField
             type="text"
-            id="baseURL"
+            id="outlined-basic"
+            variant="outlined"
             name="baseURL"
             value={baseURL}
             onChange={e => setBaseURL(e.target.value)}
@@ -45,9 +46,10 @@ export const Settings: React.FC = () => {
         <p>
           <label htmlFor="apiKey">API Key</label>
           <br />
-          <input
+          <TextField
             type="text"
-            id="apiKey"
+            id="outlined-basic"
+            variant="outlined"
             name="apiKey"
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
@@ -57,7 +59,9 @@ export const Settings: React.FC = () => {
           />
         </p>
         <p>
-          <input type="submit" value="Save" />
+          <Button variant="contained" color="primary" type="submit">
+            Save
+          </Button>
         </p>
       </form>
     </div>

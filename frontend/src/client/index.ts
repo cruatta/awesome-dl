@@ -2,7 +2,7 @@ import Axios, {AxiosInstance, AxiosResponse} from 'axios';
 import {Config} from '../config';
 import {
   DownloadRequestModel,
-  ProgressModel,
+  ProgressModel, ResultModel,
   SubmittedTaskModel,
 } from './typing';
 
@@ -13,6 +13,15 @@ export async function getHttpClient(config: Config): Promise<AxiosInstance> {
     headers: {'X-ADL-Key': config.apiKey},
   });
 }
+
+export function cleanupTasks(
+    client: AxiosInstance
+): () => Promise<AxiosResponse<ResultModel>> {
+  return (): Promise<AxiosResponse<ResultModel>> => {
+    return client.post<ResultModel>('/task/cleanup');
+  };
+}
+
 
 export function createTask(
   client: AxiosInstance
